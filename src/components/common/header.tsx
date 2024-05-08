@@ -18,6 +18,9 @@ import Link from 'next/link';
 const Header = () => {
     const t = useTranslations('Header');
     const { data: session } = useSession();
+    const google = () => {
+        window.open("http://localhost:8024/auth/google", "_self");
+    };
 
     return (
         <div className='flex justify-between px-[30px] py-[13px] border-b-2 border-gray-200 dark:border-gray-700'>
@@ -40,9 +43,8 @@ const Header = () => {
                 <div className='mx-[20px] hidden md:block' >
                     <ModeToggle />
                 </div>
-
                 {!session?.user ? <div className='flex items-center w-40 mr-[20px]'>
-                    <button onClick={() => { signIn('google') }} className="w-32 px-4 py-2 border flex gap-2 border-slate-200 dark:border-slate-700 rounded-lg text-slate-700 dark:text-slate-200 hover:border-slate-400 dark:hover:border-slate-500 hover:text-slate-900 dark:hover:text-slate-300 hover:shadow transition duration-150">
+                    <button onClick={google} className="w-32 px-4 py-2 border flex gap-2 border-slate-200 dark:border-slate-700 rounded-lg text-slate-700 dark:text-slate-200 hover:border-slate-400 dark:hover:border-slate-500 hover:text-slate-900 dark:hover:text-slate-300 hover:shadow transition duration-150">
                         <img className="w-6 h-6" src="https://www.svgrepo.com/show/475656/google-color.svg" loading="lazy" alt="google logo" />
                         <span>Login</span>
                     </button>
