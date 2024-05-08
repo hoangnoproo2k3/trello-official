@@ -19,7 +19,7 @@ const Header = () => {
     const t = useTranslations('Header');
     const { data: session } = useSession();
     const google = () => {
-        window.open("http://localhost:8024/auth/google", "_self");
+        window.open("https://trello-official-api.onrender.com/auth/google", "_self");
     };
 
     return (
