@@ -1,0 +1,17 @@
+{
+  "IndexPage": {
+    "title": "Ví dụ next-intl",
+    "description": "Chào mừng đến với ví dụ Next.js Internationalization (i18n)! Demo này giới thiệu sức mạnh của App Router và cách quản lý nội dung đa ngôn ngữ một cách mượt mà bằng cách sử dụng next-intl."
+  },
+  "NotFoundPage": {
+    "title": "Không Tìm Thấy Trang",
+    "description": "Oops! Có vẻ như bạn đã vấp phải một trang không tồn tại. Đừng lo lắng, ma thuật quốc tế hóa của chúng tôi vẫn đang hoạt động mạnh mẽ ở các phần khác của ứng dụng. Hãy thoải mái quay lại để khám phá thêm!"
+  },
+  "Header": {
+    "board": "Bảng",
+    "placeholder":"Tìm kiếm Mockups, Logos..."
+  },
+  "Footer": {
+    "copyright": "© 2024 Ứng dụng của Bạn. Bảo lưu mọi quyền."
+  }
+}
