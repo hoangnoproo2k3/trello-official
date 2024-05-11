@@ -11,15 +11,53 @@ import {
     DropdownMenuSeparator,
     DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { signIn, signOut, useSession } from 'next-auth/react';
+import axios from 'axios';
+import Cookies from 'js-cookie';
+import { signOut, useSession } from 'next-auth/react';
 import { useTranslations } from 'next-intl';
 import Link from 'next/link';
+import { useEffect, useState } from 'react';
 
 const Header = () => {
     const t = useTranslations('Header');
     const { data: session } = useSession();
     const google = () => {
         window.open(`${process.env.API_ROOT}/auth/google`, "_self");
+    };
+    const [user, setUser] = useState<any>(null);
+
+    useEffect(() => {
+        const fetchData = async () => {
+            const cookieJwt = Cookies.get('x-auth-cookie');
+            const ggId = Cookies.get('gg_id');
+
+            if (cookieJwt && ggId) {
+                try {
+                    const headers = {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${cookieJwt}`,
+                    };
+                    const response = await axios.get(`${process.env.API_ROOT}/v1/users/${ggId}`, { headers });
+                    const userData = response.data;
+
+                    // Lưu thông tin người dùng vào localStorage
+                    localStorage.setItem('userData', JSON.stringify(userData));
+
+                    setUser(userData);
+                } catch (error) {
+                    console.error('Error fetching user data:', error);
+                }
+            }
+        };
+
+        fetchData();
+    }, []);
+
+    const handleLogout = () => {
+        Cookies.remove('x-auth-cookie');
+        Cookies.remove('gg_id');
+        localStorage.removeItem('userData'); // Xóa thông tin người dùng khi đăng xuất
+        setUser(null); // Cập nhật state của người dùng về null khi đăng xuất
     };
 
     return (
@@ -43,28 +81,24 @@ const Header = () => {
                 <div className='mx-[20px] hidden md:block' >
                     <ModeToggle />
                 </div>
-                {!session?.user ? <div className='flex items-center w-40 mr-[20px]'>
-                    <button onClick={google} className="w-32 px-4 py-2 border flex gap-2 border-slate-200 dark:border-slate-700 rounded-lg text-slate-700 dark:text-slate-200 hover:border-slate-400 dark:hover:border-slate-500 hover:text-slate-900 dark:hover:text-slate-300 hover:shadow transition duration-150">
+                {user?.status !== 200 ? <div className='flex items-center w-40 mr-[20px]'>
+                    <a href={`${process.env.API_ROOT}/auth/google`} className="w-32 px-4 py-2 border flex gap-2 border-slate-200 dark:border-slate-700 rounded-lg text-slate-700 dark:text-slate-200 hover:border-slate-400 dark:hover:border-slate-500 hover:text-slate-900 dark:hover:text-slate-300 hover:shadow transition duration-150">
                         <img className="w-6 h-6" src="https://www.svgrepo.com/show/475656/google-color.svg" loading="lazy" alt="google logo" />
                         <span>Login</span>
-                    </button>
+                    </a>
                 </div> :
                     <div className='flex items-center w-20 mr-[32px]'>
                         <DropdownMenu>
                             <DropdownMenuTrigger>
-                                <img className="rounded-full" src={session?.user?.image as string} alt="Rounded avatar" />
+                                <img className="rounded-full" src={user?.message?.avatar as string} alt="Rounded avatar" />
                             </DropdownMenuTrigger>
                             <DropdownMenuContent>
-                                <DropdownMenuLabel>{session?.user?.name}</DropdownMenuLabel>
+                                <DropdownMenuLabel>{user?.message?.name}</DropdownMenuLabel>
                                 <DropdownMenuSeparator />
                                 <DropdownMenuItem>Profile</DropdownMenuItem>
                                 <DropdownMenuItem>Billing</DropdownMenuItem>
                                 <DropdownMenuItem>Team</DropdownMenuItem>
-                                <DropdownMenuItem onClick={async () => {
-                                    await signOut({
-                                        callbackUrl: "/",
-                                    })
-                                }}>Logout</DropdownMenuItem>
+                                <DropdownMenuItem onClick={handleLogout}>Logout</DropdownMenuItem>
                             </DropdownMenuContent>
                         </DropdownMenu>
                     </div>}
