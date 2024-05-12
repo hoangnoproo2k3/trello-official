@@ -1,18 +1,8 @@
 /* eslint-disable react-hooks/exhaustive-deps */
 /* eslint-disable @next/next/no-img-element */
 'use client'
-import Nav from "@/components/common/nav"
-import { useRouter, useSearchParams } from "next/navigation";
-import { useEffect } from "react";
+import Nav from "@/components/common/nav";
 const Index = () => {
-  const searchParams = useSearchParams();
-
-  useEffect(() => {
-    const token = searchParams.get('token');
-    if (token) {
-      localStorage.setItem('authToken', token);
-    }
-  }, [searchParams]);
   return (
     <div className="bg-slate-50 dark:bg-background h-screen flex">
       <Nav />
