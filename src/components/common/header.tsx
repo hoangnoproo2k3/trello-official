@@ -1,5 +1,6 @@
 /* eslint-disable @next/next/no-img-element */
 "use client"
+import { useAuth } from '@/AuthContext';
 import LocalSwitcher from '@/app/_components/local-switcher';
 import { ModeToggle } from '@/app/_components/mode-toggle';
 import Search from '@/app/_components/search';
@@ -14,13 +15,18 @@ import {
 import { signIn, signOut, useSession } from 'next-auth/react';
 import { useTranslations } from 'next-intl';
 import Link from 'next/link';
+import { useEffect, useState } from 'react';
 
 const Header = () => {
     const t = useTranslations('Header');
     const { data: session } = useSession();
-    const google = () => {
-        window.open(`${process.env.API_ROOT}/auth/google`, "_self");
-    };
+    const { user, login, logout } = useAuth();
+    const [avatar, setAvatar] = useState<any>()
+    const [name, setName] = useState<any>()
+    useEffect(() => {
+        setAvatar(user?._json?.picture)
+        setName(user?._json?.name)
+    }, [user])
 
     return (
         <div className='flex justify-between px-[30px] py-[13px] border-b-2 border-gray-200 dark:border-gray-700'>
@@ -43,8 +49,8 @@ const Header = () => {
                 <div className='mx-[20px] hidden md:block' >
                     <ModeToggle />
                 </div>
-                {!session?.user ? <div className='flex items-center w-40 mr-[20px]'>
-                    <button onClick={google} className="w-32 px-4 py-2 border flex gap-2 border-slate-200 dark:border-slate-700 rounded-lg text-slate-700 dark:text-slate-200 hover:border-slate-400 dark:hover:border-slate-500 hover:text-slate-900 dark:hover:text-slate-300 hover:shadow transition duration-150">
+                {user === null ? <div className='flex items-center w-40 mr-[20px]'>
+                    <button onClick={login} className="w-32 px-4 py-2 border flex gap-2 border-slate-200 dark:border-slate-700 rounded-lg text-slate-700 dark:text-slate-200 hover:border-slate-400 dark:hover:border-slate-500 hover:text-slate-900 dark:hover:text-slate-300 hover:shadow transition duration-150">
                         <img className="w-6 h-6" src="https://www.svgrepo.com/show/475656/google-color.svg" loading="lazy" alt="google logo" />
                         <span>Login</span>
                     </button>
@@ -52,19 +58,15 @@ const Header = () => {
                     <div className='flex items-center w-20 mr-[32px]'>
                         <DropdownMenu>
                             <DropdownMenuTrigger>
-                                <img className="rounded-full" src={session?.user?.image as string} alt="Rounded avatar" />
+                                <img className="rounded-full" src={avatar} alt="Rounded avatar" />
                             </DropdownMenuTrigger>
                             <DropdownMenuContent>
-                                <DropdownMenuLabel>{session?.user?.name}</DropdownMenuLabel>
+                                <DropdownMenuLabel>{name}</DropdownMenuLabel>
                                 <DropdownMenuSeparator />
                                 <DropdownMenuItem>Profile</DropdownMenuItem>
                                 <DropdownMenuItem>Billing</DropdownMenuItem>
                                 <DropdownMenuItem>Team</DropdownMenuItem>
-                                <DropdownMenuItem onClick={async () => {
-                                    await signOut({
-                                        callbackUrl: "/",
-                                    })
-                                }}>Logout</DropdownMenuItem>
+                                <DropdownMenuItem onClick={logout}>Logout</DropdownMenuItem>
                             </DropdownMenuContent>
                         </DropdownMenu>
                     </div>}

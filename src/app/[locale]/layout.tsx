@@ -7,6 +7,7 @@ import { NextIntlClientProvider, useMessages } from 'next-intl';
 import { Providers } from "./Providers";
 import Navbar from "@/components/common/Navbar";
 import AppWrappers from "@/AppWrappers";
+import { AuthProvider } from "@/AuthContext";
 const poppins = Poppins({
   weight: '500',
   subsets: ['latin'],
@@ -36,8 +37,10 @@ export default function RootLayout({
               disableTransitionOnChange
             >
               <NextIntlClientProvider locale={locale} messages={messages}>
-                <Header />
-                {children}
+                <AuthProvider>
+                  <Header />
+                  {children}
+                </AuthProvider>
               </NextIntlClientProvider>
             </ThemeProvider>
           </Providers>
