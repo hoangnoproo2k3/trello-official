@@ -1,13 +1,11 @@
-import Footer from "@/components/common/footer";
+import AppWrappers from "@/AppWrappers";
+import { AuthProvider } from "@/AuthContext";
 import Header from "@/components/common/header";
 import '@/styles/globals.css';
 import { ThemeProvider } from "@/themeProvider";
-import { Poppins } from 'next/font/google';
 import { NextIntlClientProvider, useMessages } from 'next-intl';
+import { Poppins } from 'next/font/google';
 import { Providers } from "./Providers";
-import Navbar from "@/components/common/Navbar";
-import AppWrappers from "@/AppWrappers";
-import { AuthProvider } from "@/AuthContext";
 const poppins = Poppins({
   weight: '500',
   subsets: ['latin'],

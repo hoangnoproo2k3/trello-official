@@ -12,21 +12,12 @@ import {
     DropdownMenuSeparator,
     DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { signIn, signOut, useSession } from 'next-auth/react';
 import { useTranslations } from 'next-intl';
 import Link from 'next/link';
-import { useEffect, useState } from 'react';
 
 const Header = () => {
     const t = useTranslations('Header');
-    const { data: session } = useSession();
     const { user, login, logout } = useAuth();
-    const [avatar, setAvatar] = useState<any>()
-    const [name, setName] = useState<any>()
-    useEffect(() => {
-        setAvatar(user?._json?.picture)
-        setName(user?._json?.name)
-    }, [user])
 
     return (
         <div className='flex justify-between px-[30px] py-[13px] border-b-2 border-gray-200 dark:border-gray-700'>
@@ -58,10 +49,10 @@ const Header = () => {
                     <div className='flex items-center w-20 mr-[32px]'>
                         <DropdownMenu>
                             <DropdownMenuTrigger>
-                                <img className="rounded-full" src={avatar} alt="Rounded avatar" />
+                                <img className="rounded-full" src={user?.avatar} alt="Rounded avatar" />
                             </DropdownMenuTrigger>
                             <DropdownMenuContent>
-                                <DropdownMenuLabel>{name}</DropdownMenuLabel>
+                                <DropdownMenuLabel>{user?.name}</DropdownMenuLabel>
                                 <DropdownMenuSeparator />
                                 <DropdownMenuItem>Profile</DropdownMenuItem>
                                 <DropdownMenuItem>Billing</DropdownMenuItem>

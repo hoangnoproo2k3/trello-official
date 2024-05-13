@@ -1,15 +1,13 @@
 // AuthProvider.tsx
 "use client"
 import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react';
-
-// Define types for user and auth context
+import { getUserCurrent } from './actions/api';
 
 interface AuthContextType {
     user: any;
     login: () => void;
     logout: () => void;
 }
-
 // Create the AuthContext
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
@@ -45,13 +43,18 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
                         "Access-Control-Allow-Credentials": "true",
                     },
                 });
-
                 if (response.status === 200) {
                     const resObject = await response.json();
-                    setUser(resObject.user);
+                    try {
+                        const result = await getUserCurrent(resObject?.user?.id);
+                        setUser(result.message);
+                    } catch (error) {
+                        console.error(error);
+                    }
                 } else {
                     throw new Error("Authentication has failed!");
                 }
+
             } catch (err) {
                 console.log(err);
             }
