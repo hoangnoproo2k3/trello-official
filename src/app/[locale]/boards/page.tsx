@@ -1,19 +1,21 @@
+/* eslint-disable react-hooks/exhaustive-deps */
 'use client'
+import { createNewBoard, getPaginatedDocuments } from '@/apis/boardApi'
 import Nav from '@/components/common/nav'
 import { useSession } from 'next-auth/react'
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
-import { useState } from 'react'
-import { SketchPicker } from 'react-color';
-import { ChromePicker } from 'react-color';
-import { TwitterPicker } from 'react-color';
-import { GithubPicker } from 'react-color';
+import { useEffect, useState } from 'react'
+import { TwitterPicker } from 'react-color'
 
 const Boards = () => {
     const currentPath = usePathname()
     const [isOpen, setIsOpen] = useState(false);
+    const [listBoards, setListBoards] = useState<any[]>([]);
     const [boardName, setBoardName] = useState('');
-    const [boardBackground, setBoardBackground] = useState('#ffffff');
+    const [boardBackground, setBoardBackground] = useState('#ABB8C3');
+    const userId = localStorage.getItem('userId');
+
     const openModal = () => {
         setIsOpen(true);
     };
@@ -21,17 +23,58 @@ const Boards = () => {
         setIsOpen(false);
     };
     const handleChangeComplete = (color: any) => {
-        console.log(color);
         setBoardBackground(color.hex);
     };
+    const handleBoardNameChange = (event: any) => {
+        setBoardName(event.target.value);
+    };
+    const fetchListBoards = async () => {
+        if (userId) {
+            try {
+                const dataBoards = await getPaginatedDocuments({ ownerIds: userId });
+                setListBoards(dataBoards.message.getUsers);
+            } catch (error) {
+                console.error('Error calling another API:', error);
+            }
+        } else {
+            console.log('User ID not found in localStorage');
+        }
+    }
+    const handleCreateBoard = async () => {
+        if (!boardName.trim()) {
+            alert('Vui lòng nhập tên bảng.');
+            return;
+        }
+        try {
+            await createNewBoard({
+                title: boardName,
+                bgColor: boardBackground,
+                ownerIds: userId
+            })
+            closeModal()
+            setBoardName('');
+            setBoardBackground('#FFFFFF');
+            fetchListBoards()
+        } catch (error) {
+            console.error('Error calling another API:', error);
+        }
+    };
     const { data: session } = useSession();
+    useEffect(() => {
+        fetchListBoards()
+    }, [])
+
     return (
         <div className="bg-slate-50 dark:bg-background h-screen flex">
             <Nav />
             {!session?.user ? <div className='right w-full flex gap-2 flex-col items-center p-10 font-bold uppercase text-[16px]'> Hãy đăng nhập để xem các không gian làm việc của bạn </div> : <div className="right w-full flex gap-2 flex-col ">
                 <p className='p-10 font-bold'>CÁC KHÔNG GIAN LÀM VIỆC CỦA BẠN</p>
                 <div className="grid grid-cols-12 gap-8 mx-8 h-[160px]">
-                    <Link href={`${currentPath}/fsdafboard`} className={`flex pl-6 col-span-3 pt-6 font-bold bg-gray-500`}>Board của Hoàng</Link>
+                    {listBoards.map((item: any) => {
+                        return (
+                            <Link key={item?._id} href={`${currentPath}/${item?.slug}`} className={`flex pl-6 col-span-3 pt-6 font-bold bg-gray-500`} style={{ backgroundColor: item?.bgColor, height: '140px' }}>{item?.title}</Link>
+                        )
+                    })}
                     <div className="flex justify-center items-center col-span-3 bg-slate-500 cursor-pointer" onClick={openModal}>
                         Tạo bảng mới
                     </div>
@@ -41,7 +84,6 @@ const Boards = () => {
                                 <div className="absolute inset-0 bg-gray-500 opacity-75"></div>
                             </div>
                             <span className="hidden sm:inline-block sm:align-middle sm:h-screen" aria-hidden="true">&#8203;</span>
-
                             <div className="inline-block align-bottom bg-white rounded-lg text-left overflow-hidden shadow-xl transform transition-all sm:my-8 sm:align-middle sm:max-w-lg sm:w-full">
                                 <div className="bg-white px-4 pt-5 pb-4 sm:p-6 sm:pb-4">
                                     <div className="sm:flex sm:items-start">
@@ -65,8 +107,9 @@ const Boards = () => {
                                                 </label>
                                                 <input
                                                     type="text"
-                                                    id="first_name"
-                                                    className=" bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5  dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500"
+                                                    value={boardName}
+                                                    onChange={handleBoardNameChange}
+                                                    className=" bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5  dark:border-gray-600 dark:placeholder-gray-400  dark:focus:ring-blue-500 dark:focus:border-blue-500"
                                                     placeholder="Tên bảng"
                                                 />
                                             </div>
@@ -74,7 +117,7 @@ const Boards = () => {
                                     </div>
                                 </div>
                                 <div className="bg-gray-50 px-4 py-3 sm:px-6 sm:flex sm:flex-row-reverse">
-                                    <button onClick={closeModal} className="w-full inline-flex justify-center rounded-md border border-transparent shadow-sm px-4 py-2 bg-emerald-600 text-base font-medium text-white hover:bg-emerald-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-emerald-500 sm:ml-3 sm:w-auto sm:text-sm">
+                                    <button onClick={handleCreateBoard} className="w-full inline-flex justify-center rounded-md border border-transparent shadow-sm px-4 py-2 bg-emerald-600 text-base font-medium text-white hover:bg-emerald-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-emerald-500 sm:ml-3 sm:w-auto sm:text-sm">
                                         Tạo mới
                                     </button>
                                     <button onClick={closeModal} className="mt-3 w-full inline-flex justify-center rounded-md border border-gray-300 shadow-sm px-4 py-2 bg-white text-base font-medium text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-emerald-500 sm:mt-0 sm:w-auto sm:text-sm">
