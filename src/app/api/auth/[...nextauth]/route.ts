@@ -1,6 +1,6 @@
+import { saveNewUser } from "@/apis/userApi";
 import NextAuth from "next-auth";
 import GoogleProvider from "next-auth/providers/google";
-import fetch from 'node-fetch'; // Import fetch để gửi HTTP requests từ máy chủ của bạn
 
 const authOptions = {
     providers: [
@@ -12,28 +12,16 @@ const authOptions = {
     callbacks: {
         async signIn({ user, account }: any) {
             if (account.provider === "google") {
-                const { name, email } = user;
-                console.log(user);
+                const newUser = {
+                    email: user.email,
+                    googleId: user.id,
+                    avatar: user.image,
+                    name: user.name
+                };
                 try {
-                    // Gửi thông tin người dùng tới API bên ngoài
-                    const response = await fetch('https://your-external-api.com/users', {
-                        method: 'POST',
-                        headers: {
-                            'Content-Type': 'application/json',
-                        },
-                        body: JSON.stringify({ name, email }),
-                    });
-
-                    if (response.ok) {
-                        const responseData = await response.json();
-                        console.log(responseData); // Log thông tin trả về từ API nếu cần
-                    } else {
-                        console.error('Failed to save user data to external API');
-                        // Xử lý lỗi nếu cần
-                    }
+                    await saveNewUser(newUser);
                 } catch (error) {
                     console.error('Error saving user data to external API:', error);
-                    // Xử lý lỗi nếu cần
                 }
             }
             return true;
@@ -45,3 +33,4 @@ const authOptions = {
 const handler = NextAuth(authOptions);
 
 export { handler as GET, handler as POST };
+

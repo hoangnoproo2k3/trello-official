@@ -1,5 +1,6 @@
 'use client'
 import Nav from '@/components/common/nav'
+import { useSession } from 'next-auth/react'
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
 import { useState } from 'react'
@@ -16,19 +17,18 @@ const Boards = () => {
     const openModal = () => {
         setIsOpen(true);
     };
-
     const closeModal = () => {
         setIsOpen(false);
     };
     const handleChangeComplete = (color: any) => {
         console.log(color);
-
-        setBoardBackground(color.hex); // Lưu màu nền được chọn vào state
+        setBoardBackground(color.hex);
     };
+    const { data: session } = useSession();
     return (
         <div className="bg-slate-50 dark:bg-background h-screen flex">
             <Nav />
-            <div className="right w-full flex gap-2 flex-col ">
+            {!session?.user ? <div className='right w-full flex gap-2 flex-col items-center p-10 font-bold uppercase text-[16px]'> Hãy đăng nhập để xem các không gian làm việc của bạn </div> : <div className="right w-full flex gap-2 flex-col ">
                 <p className='p-10 font-bold'>CÁC KHÔNG GIAN LÀM VIỆC CỦA BẠN</p>
                 <div className="grid grid-cols-12 gap-8 mx-8 h-[160px]">
                     <Link href={`${currentPath}/fsdafboard`} className={`flex pl-6 col-span-3 pt-6 font-bold bg-gray-500`}>Board của Hoàng</Link>
@@ -85,7 +85,7 @@ const Boards = () => {
                         </div>
                     </div>
                 </div>
-            </div>
+            </div>}
         </div>
     )
 }
