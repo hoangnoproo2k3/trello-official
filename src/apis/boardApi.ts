@@ -1,9 +1,9 @@
 // 'use server'
 import axiosInstance from './axiosInstance';
 
-export const getPaginatedDocuments = async (ownerId: any) => {
+export const getPaginatedDocuments = async (pageNumber: any, pageSize: any, ownerId: any) => {
     try {
-        const response = await axiosInstance.post('/v1/boards/list-board', ownerId);
+        const response = await axiosInstance.post(`/v1/boards/list-board?pageNumber=${pageNumber}&pageSize=${pageSize}`, ownerId);
         if (response.status === 200) {
             return response.data;
         } else {
