@@ -35,7 +35,9 @@ const Boards = () => {
         if (userId) {
             try {
                 const dataBoards = await getPaginatedDocuments(currentPage, pageSize, { ownerId: userId });
-                setListBoards(dataBoards.message.getBoards);
+                if (Array.isArray(dataBoards.message.getBoards)) {
+                    setListBoards(dataBoards.message.getBoards);
+                }
                 setTotalPage(dataBoards.message.getBoardsCount)
             } catch (error) {
                 console.error('Error calling another API:', error);
@@ -81,7 +83,7 @@ const Boards = () => {
                 <div className="grid grid-cols-12 gap-8 mx-8 h-[160px]">
                     {listBoards.map((item: any) => {
                         return (
-                            <Link key={item?._id} href={`${currentPath}/${item?.slug}?boardId=${item?._id}`} className={`flex pl-6 col-span-3 pt-6 font-bold bg-gray-500`} style={{ backgroundColor: item?.bgColor, height: '140px' }}>{item?.title}</Link>
+                            <Link key={item?._id} href={`${currentPath}/${item?.slug}?boardIdObj=${item?._id}`} className={`flex pl-6 col-span-3 pt-6 font-bold bg-gray-500`} style={{ backgroundColor: item?.bgColor, height: '140px' }}>{item?.title}</Link>
                         )
                     })}
                     <div className="flex justify-center items-center col-span-3 bg-slate-500 cursor-pointer" onClick={openModal}>

@@ -43,7 +43,9 @@ const Search = React.memo(({ placeholder, userId }: any) => {
             isLoadingRef.current = true;
             try {
                 const res = await getSearchTitleBoards(searchTerm, { ownerId: userId });
-                setSearchResults(res.getBoards);
+                if (Array.isArray(res.getBoards)) {
+                    setSearchResults(res.getBoards);
+                }
             } catch (error) {
                 handleError(error);
             } finally {
