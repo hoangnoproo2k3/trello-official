@@ -21,17 +21,16 @@ const Search = React.memo(({ placeholder, userId }: any) => {
         (event: any) => {
             const newSearchTerm = event.target.value;
             setSearchTerm(newSearchTerm);
+            setShowModal(newSearchTerm.trim() !== '');
 
-            if (newSearchTerm.length === 0) {
+            if (newSearchTerm.length < 3) {
                 setSearchResults([]);
                 isLoadingRef.current = false;
-                setShowModal(false)
             } else {
-                setShowModal(true);
                 isLoadingRef.current = true;
             }
         },
-        [setSearchTerm]
+        [setSearchTerm, setShowModal]
     );
 
     const handleError = useCallback((error: any) => {
@@ -54,7 +53,7 @@ const Search = React.memo(({ placeholder, userId }: any) => {
     );
 
     useEffect(() => {
-        if (isLoadingRef.current) {
+        if (searchTerm.length >= 3 && isLoadingRef.current) {
             debouncedSearch();
         }
     }, [searchTerm, userId, debouncedSearch, isLoadingRef]);
@@ -103,7 +102,14 @@ const Search = React.memo(({ placeholder, userId }: any) => {
                             </div>
                         </div>
                     )}
-                    {!isLoadingRef.current && searchResults.length === 0 && (
+                    {!isLoadingRef.current && searchTerm.length < 3 && (
+                        <div className="flex items-center justify-center p-4">
+                            <p className="text-gray-500 dark:text-gray-400">
+                                Please enter at least 3 characters to search.
+                            </p>
+                        </div>
+                    )}
+                    {!isLoadingRef.current && searchTerm.length >= 3 && searchResults.length === 0 && (
                         <div className="flex items-center justify-center py-4">
                             <p className="text-gray-500 dark:text-gray-400">No results found.</p>
                         </div>

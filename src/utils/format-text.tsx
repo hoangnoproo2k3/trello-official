@@ -10,3 +10,6 @@ export const generatePlaceholderCard = (column: any) => {
         FE_PlaceholderCard: true
     }
 }
+export function containsSubstring(mainString: string, substring: string) {
+    return mainString.includes(substring);
+}

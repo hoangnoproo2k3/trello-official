@@ -15,17 +15,21 @@ import {
 import { signIn, signOut, useSession } from 'next-auth/react';
 import { useTranslations } from 'next-intl';
 import Link from 'next/link';
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
 
 const Header = () => {
     const t = useTranslations('Header');
     const { data: session } = useSession();
+    const [userId, setUserId] = useState<any>()
+    const [avaUser, setAvaUser] = useState<any>()
     useEffect(() => {
         const getUserCurrent = async () => {
             if (session?.user) {
                 const userDetail = await getDetailUser({ email: session?.user?.email })
                 if (userDetail?.message?._id) {
                     localStorage.setItem('userId', userDetail.message._id);
+                    setUserId(userDetail.message._id)
+                    setAvaUser(userDetail.message.avatar)
                 }
             }
         }
@@ -33,6 +37,12 @@ const Header = () => {
     }, [session?.user])
     const handleLoginWithGoogle = () => {
         signIn('google')
+    }
+    const handleLogout = async () => {
+        await signOut({
+            callbackUrl: "/",
+        })
+        localStorage.removeItem('userId');
     }
     return (
         <div className='flex justify-between px-[30px] py-[13px] border-b-2 border-gray-200 dark:border-gray-700'>
@@ -48,7 +58,7 @@ const Header = () => {
                     </svg>
                     <p className='text-[#000] pl-[5px] dark:text-white'>{t('board')}</p>
                 </div>
-                <Search placeholder={t('placeholder')} />
+                <Search placeholder={t('placeholder')} userId={userId} />
             </div>
             <div className='flex items-center'>
                 <LocalSwitcher />
@@ -64,19 +74,12 @@ const Header = () => {
                     <div className='flex items-center w-20 mr-[32px]'>
                         <DropdownMenu>
                             <DropdownMenuTrigger>
-                                <img className="rounded-full" src={session?.user?.image as string} alt="Rounded avatar" />
+                                <img className="rounded-full" src={avaUser} alt="Rounded avatar" />
                             </DropdownMenuTrigger>
                             <DropdownMenuContent>
                                 <DropdownMenuLabel>{session?.user?.name}</DropdownMenuLabel>
                                 <DropdownMenuSeparator />
-                                <DropdownMenuItem>Profile</DropdownMenuItem>
-                                <DropdownMenuItem>Billing</DropdownMenuItem>
-                                <DropdownMenuItem>Team</DropdownMenuItem>
-                                <DropdownMenuItem onClick={async () => {
-                                    await signOut({
-                                        callbackUrl: "/",
-                                    })
-                                }}>Logout</DropdownMenuItem>
+                                <DropdownMenuItem onClick={handleLogout}>Logout</DropdownMenuItem>
                             </DropdownMenuContent>
                         </DropdownMenu>
                     </div>}

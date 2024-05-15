@@ -31,8 +31,8 @@ const Boards = () => {
     const fetchListBoards = async () => {
         if (userId) {
             try {
-                const dataBoards = await getPaginatedDocuments({ ownerIds: userId });
-                setListBoards(dataBoards.message.getUsers);
+                const dataBoards = await getPaginatedDocuments({ ownerId: userId });
+                setListBoards(dataBoards.message.getBoards);
             } catch (error) {
                 console.error('Error calling another API:', error);
             }
@@ -49,11 +49,11 @@ const Boards = () => {
             await createNewBoard({
                 title: boardName,
                 bgColor: boardBackground,
-                ownerIds: userId
+                ownerId: userId
             })
             closeModal()
             setBoardName('');
-            setBoardBackground('#FFFFFF');
+            setBoardBackground('#ABB8C3');
             fetchListBoards()
         } catch (error) {
             console.error('Error calling another API:', error);
