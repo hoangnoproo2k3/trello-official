@@ -56,11 +56,12 @@ const ListColumns = ({ boards }: any) => {
     const [activeDragItemType, setActiveDragItemType] = useState<any>();
     const [activeDragItemData, setActiveDragItemData] = useState<any>(null);
     const [oldColumnDraggingCard, setOldColumnDraggingCard] = useState<any>();
-    const [orderedColumns, setOrderedColumns] = useState<any[]>(boards);
+    const [orderedColumns, setOrderedColumns] = useState<any[]>([]);
 
     useEffect(() => {
         setOrderedColumns(boards);
     }, [boards]);
+
     const findColumnByCardId = (cardId: any) => {
         return orderedColumns.find((column: any) => column?.cards?.map((card: any) => card._id)?.includes(cardId))
     }
@@ -240,11 +241,13 @@ const ListColumns = ({ boards }: any) => {
                 onDragOver={handleDragOver}
                 onDragEnd={handleDragEnd}
             >
-                <SortableContext items={boards?.map((c: any) => c._id)} strategy={horizontalListSortingStrategy}>
-                    {orderedColumns?.map((column: any, index: any) => (
-                        <Column key={index} column={column} />
-                    ))}
-                </SortableContext>
+                {Array.isArray(boards) &&
+                    <SortableContext items={boards?.map((c: any) => c._id)} strategy={horizontalListSortingStrategy}>
+                        {orderedColumns?.map((column: any, index: any) => (
+                            <Column key={index} column={column} />
+                        ))}
+                    </SortableContext>
+                }
                 <DragOverlay dropAnimation={dropAnimation}>
                     {!activeDragItemType && null}
                     {activeDragItemType === ACTIVE_DRAG_ITEM_TYPE.COLUMN && <Column column={activeDragItemData} />}
