@@ -322,7 +322,7 @@ const ListColumns = ({ boards, boardId }: any) => {
                     <Temp_board>
                         {!showNewBoardForm ? (
                             <div
-                                className='flex justify-between items-center h-[50px] flex-shrink-0'
+                                className='flex justify-between items-center h-[50px] flex-shrink-0 cursor-pointer'
                                 onClick={handleAddNewBoardClick}
                             >
                                 <p className='text-base font-medium dark:text-black'>+ Add new board</p>
