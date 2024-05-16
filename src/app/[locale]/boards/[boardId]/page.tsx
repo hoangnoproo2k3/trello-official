@@ -17,7 +17,7 @@ const BoardId = async ({ params, searchParams }: any) => {
         <div>
             <Navbar title_board={reponse.message.getBoards?.title} visibility={reponse.message.getBoards?.type} />
             {/* <ListColumns boards={orderedColumns} /> */}
-            <ListColumns boards={orderedColumnsDB} />
+            <ListColumns boards={orderedColumnsDB} boardId={searchParams.boardIdObj} />
         </div>
     )
 }

@@ -26,7 +26,37 @@ axiosInstance.interceptors.response.use(
     },
     (error) => {
         // Handle response errors here
-        console.error('API call error:', error);
+        const errorMessage =
+            error.response && error.response.data && error.response.data.message
+                ? error.response.data.message
+                : error.message;
+
+        // You can handle different error cases based on the status code or other properties
+        switch (error.response && error.response.status) {
+            case 400:
+                // Bad Request
+                console.error('Bad Request:', errorMessage);
+                break;
+            case 401:
+                // Unauthorized
+                console.error('Unauthorized:', errorMessage);
+                break;
+            case 403:
+                // Forbidden
+                console.error('Forbidden:', errorMessage);
+                break;
+            case 404:
+                // Not Found
+                console.error('Not Found:', errorMessage);
+                break;
+            case 500:
+                // Internal Server Error
+                console.error('Internal Server Error:', errorMessage);
+                break;
+            default:
+                console.error('API call error:', errorMessage);
+        }
+
         return Promise.reject(error);
     }
 );
