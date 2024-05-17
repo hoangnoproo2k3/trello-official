@@ -10,12 +10,17 @@ import MdEditor from 'react-markdown-editor-lite';
 import 'react-markdown-editor-lite/lib/index.css';
 import BlogEditor from '@/components/BlogEditor';
 import Comment from '../action/comment';
+import { createNewCard } from '@/apis/cardApi';
+import axios from 'axios';
 interface ModalCardProps {
     onClose: () => void;
+    onRefetch: () => void;
+    columnId: any,
+    boardId: any
 }
 const mdParser = new MarkdownIt();
 
-const ModalCard: React.FC<ModalCardProps> = ({ onClose }) => {
+const ModalCard: React.FC<ModalCardProps> = ({ onClose, columnId, boardId, onRefetch }) => {
     const [image, setImage] = useState<File | null>(null);
     const [previewImage, setPreviewImage] = useState<string | null>(null);
 
@@ -28,6 +33,7 @@ const ModalCard: React.FC<ModalCardProps> = ({ onClose }) => {
     };
     const [isEditing, setIsEditing] = useState(false);
     const [profileName, setProfileName] = useState("Profile");
+    const [error, setError] = useState<any>();
 
     const handleDoubleClick = () => {
         setIsEditing(true);
@@ -41,7 +47,20 @@ const ModalCard: React.FC<ModalCardProps> = ({ onClose }) => {
         setProfileName(e.target.value);
     };
     const [html, setHtml] = useState("");
-
+    const handleCreateCard = async () => {
+        try {
+            await createNewCard({ title: profileName, columnId: columnId, boardId: boardId });
+            await onRefetch()
+            onClose()
+        } catch (error: unknown) {
+            // Kiểm tra kiểu của error trước khi truy cập các thuộc tính
+            if (axios.isAxiosError(error)) {
+                setError(error.response?.data?.message || error.message);
+            } else {
+                setError('An unexpected error occurred');
+            }
+        }
+    }
     return (
         <Modal onClose={onClose}>
             <form>
@@ -145,10 +164,11 @@ const ModalCard: React.FC<ModalCardProps> = ({ onClose }) => {
                         Cancel
                     </button>
                     <button
-                        type="submit"
+                        onClick={handleCreateCard}
+                        type='button'
                         className="rounded-md bg-indigo-600 px-3 py-2 text-sm font-semibold text-white shadow-sm hover:bg-indigo-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600"
                     >
-                        Save
+                        Create card
                     </button>
                 </div>
             </form>

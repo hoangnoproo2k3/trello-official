@@ -6,11 +6,13 @@ import { CSS } from '@dnd-kit/utilities';
 import { GripVertical, Trash } from 'lucide-react'; // Add Trash icon
 import { useEffect, useRef, useState } from 'react';
 import Modal_card from './modal/Modal-card';
+import { getCardssWithColumn } from '@/apis/cardApi';
 
 const Column = ({ column, onInteraction }: any) => {
     const [showModal, setShowModal] = useState(false);
     const [showDropdown, setShowDropdown] = useState(false);
     const dropdownRef = useRef<HTMLDivElement | null>(null);
+    const [orderedCards, setOrderedCards] = useState<any[]>([]);
 
     const openModal = () => {
         setShowModal(true);
@@ -49,6 +51,19 @@ const Column = ({ column, onInteraction }: any) => {
             document.removeEventListener('mousedown', handleClickOutside);
         };
     }, [showDropdown]);
+
+    useEffect(() => {
+        fetchListBoards()
+    }, [])
+    const fetchListBoards = async () => {
+        try {
+            const dataBoards = await getCardssWithColumn({ columnId: column?._id, boardId: column?.boardId });
+            console.log(dataBoards);
+            setOrderedCards(dataBoards.getCards);
+        } catch (error) {
+            console.error('Error calling another API:', error);
+        }
+    }
 
     const {
         attributes,
@@ -91,9 +106,9 @@ const Column = ({ column, onInteraction }: any) => {
                             </div>
                         </div>
                     </div>
-                    {Array.isArray(column?.cards) && (
-                        <SortableContext items={column.cards?.map((c: any) => c._id)} strategy={verticalListSortingStrategy}>
-                            {column?.cards?.map((card: any, index: any) => (
+                    {orderedCards?.length > 0 && (
+                        <SortableContext items={orderedCards?.map((c: any) => c._id)} strategy={verticalListSortingStrategy}>
+                            {orderedCards?.map((card: any, index: any) => (
                                 <Item_body_card key={index} card={card} />
                             ))}
                         </SortableContext>
@@ -103,7 +118,7 @@ const Column = ({ column, onInteraction }: any) => {
                     </div>
                 </div>
             </div>
-            {showModal && (<Modal_card onClose={closeModal} />)}
+            {showModal && (<Modal_card onClose={closeModal} columnId={column?._id} boardId={column?.boardId} onRefetch={fetchListBoards} />)}
         </>
     );
 };
