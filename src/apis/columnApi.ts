@@ -1,4 +1,4 @@
-"use server"
+// "use server"
 import axiosInstance from './axiosInstance';
 export const createNewColumn = async (data: any) => {
     try {
@@ -15,6 +15,21 @@ export const createNewColumn = async (data: any) => {
         throw error;
     }
 };
+export const updateCardOrderIdsColumn = async (data: any) => {
+    try {
+        const response = await axiosInstance.patch('/v1/columns/update-ordercardId', data);
+        if (response.status === 200) {
+            console.log(response.data);
+
+            return response.data;
+        } else {
+            throw new Error(`Failed with status: ${response.status}`);
+        }
+    } catch (error) {
+        console.error('Error saving user data to external API:', error);
+        throw error;
+    }
+}
 export const destroyColumn = async (data: any) => {
     try {
         const response = await axiosInstance.patch('/v1/columns', data);
@@ -28,7 +43,7 @@ export const destroyColumn = async (data: any) => {
 };
 export const getColumnsWithBoard = async (boardId: any) => {
     try {
-        const response = await axiosInstance.post(`/v1/columns/list-columns`, boardId);
+        const response = await axiosInstance.post(`/v1/columns/list-columns-cards`, boardId);
         if (response.status === 200) {
             return response.data;
         } else {

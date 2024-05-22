@@ -27,3 +27,16 @@ export const getCardssWithColumn = async (boardId: any) => {
         throw error;
     }
 }
+export const updateCardWithDndKit = async (data: any) => {
+    try {
+        const response = await axiosInstance.patch('/v1/cards/update-dnd', data);
+        if (response.status === 200) {
+            return response.data;
+        } else {
+            throw new Error(`Failed with status: ${response.status}`);
+        }
+    } catch (error) {
+        console.error('Error saving user data to external API:', error);
+        throw error;
+    }
+}

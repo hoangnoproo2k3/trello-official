@@ -25,9 +25,10 @@ import { X } from 'lucide-react';
 import { MutableRefObject, useCallback, useEffect, useRef, useState } from 'react';
 import Column from './Column';
 import Item_body_card from './board/item_card';
-import { createNewColumn, getColumnsWithBoard } from '@/apis/columnApi';
+import { createNewColumn, getColumnsWithBoard, updateCardOrderIdsColumn } from '@/apis/columnApi';
 import { updateColumnOrderIdsBoard } from '@/apis/boardApi';
 import axios from 'axios';
+import { updateCardWithDndKit } from '@/apis/cardApi';
 const ACTIVE_DRAG_ITEM_TYPE = {
     COLUMN: 'ACTIVE_DRAG_ITEM_TYPE_COLUMN',
     CARD: 'ACTIVE_DRAG_ITEM_TYPE_CARD'
@@ -60,7 +61,7 @@ const ListColumns = ({ boards, boardId }: any) => {
     const [activeDragItemData, setActiveDragItemData] = useState<any>(null);
     const [oldColumnDraggingCard, setOldColumnDraggingCard] = useState<any>();
     const [orderedColumns, setOrderedColumns] = useState<any[]>([]);
-
+    const [orderedCards, setOrderedCards] = useState<any[]>([]);
     useEffect(() => {
         setOrderedColumns(boards);
     }, [boards]);
@@ -129,7 +130,9 @@ const ListColumns = ({ boards, boardId }: any) => {
             const { id: activeDraggingCardId, data: { current: activeDraggingCardData } } = active
             const { id: overCardId } = over
             const activeColumn = findColumnByCardId(activeDraggingCardId)
-            const overColumn = findColumnByCardId(overCardId)
+            const overColumn: any = findColumnByCardId(overCardId)
+            console.log(overColumn, active, over);
+            updateCardsWithDndkit(activeDraggingCardId, overColumn._id)
             if (!activeColumn || !overColumn) return
             if (oldColumnDraggingCard._id !== overColumn._id) {
                 setOrderedColumns((prevColumns: any) => {
@@ -159,6 +162,7 @@ const ListColumns = ({ boards, boardId }: any) => {
                         }
                         nextOverColumn.cards = nextOverColumn.cards.toSpliced(newCardIndex, 0, rebuild_activeDragItemData)
                         nextOverColumn.cardOrderIds = nextOverColumn.cards.map((card: { _id: any; }) => card._id)
+                        updateListColumnWithOrderCardsId(nextOverColumn._id, nextOverColumn.cards.map((card: { _id: any; }) => card._id))
                     }
                     return nextColumns
                 })
@@ -171,6 +175,7 @@ const ListColumns = ({ boards, boardId }: any) => {
                     const targetColummn = nextColumns.find((c: { _id: any; }) => c._id === overColumn._id)
                     targetColummn.cards = dndOrderedCards
                     targetColummn.cardOrderIds = dndOrderedCards.map((c: any) => c._id)
+                    updateListColumnWithOrderCardsId(overColumn._id, dndOrderedCards.map((c: any) => c._id))
                     return nextColumns
                 })
             }
@@ -182,7 +187,7 @@ const ListColumns = ({ boards, boardId }: any) => {
                 const newColumnIndex = orderedColumns.findIndex(c => c._id === over.id)
                 const dndOrderedColumn = arrayMove(orderedColumns, oldColumnIndex, newColumnIndex)
                 const dndOrderedColumnIds = dndOrderedColumn.map(c => c._id)
-                fetchListBoardsWithOrderColumnsId(dndOrderedColumnIds)
+                updateListBoardsWithOrderColumnsId(dndOrderedColumnIds)
                 setOrderedColumns(dndOrderedColumn);
             }
         }
@@ -287,9 +292,23 @@ const ListColumns = ({ boards, boardId }: any) => {
             console.error('Error calling another API:', error);
         }
     }
-    const fetchListBoardsWithOrderColumnsId = async (dndOrderedColumnIds: any) => {
+    const updateListBoardsWithOrderColumnsId = async (dndOrderedColumnIds: any) => {
         try {
             await updateColumnOrderIdsBoard({ boardId, columnOrderIds: dndOrderedColumnIds })
+        } catch (error) {
+            console.error('Error calling another API:', error);
+        }
+    }
+    const updateListColumnWithOrderCardsId = async (columnId: any, cardOrderIds: any) => {
+        try {
+            await updateCardOrderIdsColumn({ columnId: columnId, cardOrderIds: cardOrderIds })
+        } catch (error) {
+            console.error('Error calling another API:', error);
+        }
+    }
+    const updateCardsWithDndkit = async (cardId: any, columnId: any) => {
+        try {
+            await updateCardWithDndKit({ cardId, columnId })
         } catch (error) {
             console.error('Error calling another API:', error);
         }

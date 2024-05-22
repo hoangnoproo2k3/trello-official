@@ -52,19 +52,6 @@ const Column = ({ column, onInteraction }: any) => {
         };
     }, [showDropdown]);
 
-    useEffect(() => {
-        fetchListBoards()
-    }, [])
-    const fetchListBoards = async () => {
-        try {
-            const dataBoards = await getCardssWithColumn({ columnId: column?._id, boardId: column?.boardId });
-            console.log(dataBoards);
-            setOrderedCards(dataBoards.getCards);
-        } catch (error) {
-            console.error('Error calling another API:', error);
-        }
-    }
-
     const {
         attributes,
         listeners,
@@ -106,9 +93,9 @@ const Column = ({ column, onInteraction }: any) => {
                             </div>
                         </div>
                     </div>
-                    {orderedCards?.length > 0 && (
-                        <SortableContext items={orderedCards?.map((c: any) => c._id)} strategy={verticalListSortingStrategy}>
-                            {orderedCards?.map((card: any, index: any) => (
+                    {column?.cards?.length > 0 && (
+                        <SortableContext items={column?.cards?.map((c: any) => c._id)} strategy={verticalListSortingStrategy}>
+                            {column?.cards?.map((card: any, index: any) => (
                                 <Item_body_card key={index} card={card} />
                             ))}
                         </SortableContext>
@@ -118,7 +105,7 @@ const Column = ({ column, onInteraction }: any) => {
                     </div>
                 </div>
             </div>
-            {showModal && (<Modal_card onClose={closeModal} columnId={column?._id} boardId={column?.boardId} onRefetch={fetchListBoards} />)}
+            {showModal && (<Modal_card onClose={closeModal} columnId={column?._id} boardId={column?.boardId} onRefetch={onInteraction} />)}
         </>
     );
 };
