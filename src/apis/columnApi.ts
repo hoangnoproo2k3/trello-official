@@ -19,8 +19,6 @@ export const updateCardOrderIdsColumn = async (data: any) => {
     try {
         const response = await axiosInstance.patch('/v1/columns/update-ordercardId', data);
         if (response.status === 200) {
-            console.log(response.data);
-
             return response.data;
         } else {
             throw new Error(`Failed with status: ${response.status}`);

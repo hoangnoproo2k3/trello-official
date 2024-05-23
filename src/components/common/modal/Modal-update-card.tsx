@@ -1,6 +1,4 @@
 /* eslint-disable @next/next/no-img-element */
-/* eslint-disable react/no-unescaped-entities */
-// components/Modal_card.tsx
 
 import { createNewCard } from '@/apis/cardApi';
 import BlogEditor from '@/components/BlogEditor';
@@ -14,12 +12,10 @@ import Modal from './Modal';
 interface ModalCardProps {
     onClose: () => void;
     onRefetch: () => void;
-    columnId: any,
-    boardId: any
+    columnId: any
 }
 const mdParser = new MarkdownIt();
-
-const ModalCard: React.FC<ModalCardProps> = ({ onClose, columnId, boardId, onRefetch }) => {
+const Modal_update_card: React.FC<ModalCardProps> = ({ onClose, columnId, onRefetch }) => {
     const [image, setImage] = useState<File | null>(null);
     const [previewImage, setPreviewImage] = useState<string | null>(null);
 
@@ -48,7 +44,7 @@ const ModalCard: React.FC<ModalCardProps> = ({ onClose, columnId, boardId, onRef
     const [html, setHtml] = useState("");
     const handleCreateCard = async () => {
         try {
-            await createNewCard({ title: profileName, columnId: columnId, boardId: boardId });
+            // await createNewCard({ title: profileName, columnId: columnId, boardId: boardId });
             await onRefetch()
             onClose()
         } catch (error: unknown) {
@@ -167,13 +163,13 @@ const ModalCard: React.FC<ModalCardProps> = ({ onClose, columnId, boardId, onRef
                         type='button'
                         className="rounded-md bg-indigo-600 px-3 py-2 text-sm font-semibold text-white shadow-sm hover:bg-indigo-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600"
                     >
-                        Create card
+                        Update card
                     </button>
                 </div>
             </form>
 
         </Modal>
-    );
-};
+    )
+}
 
-export default ModalCard;
+export default Modal_update_card

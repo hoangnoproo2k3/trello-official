@@ -131,7 +131,6 @@ const ListColumns = ({ boards, boardId }: any) => {
             const { id: overCardId } = over
             const activeColumn = findColumnByCardId(activeDraggingCardId)
             const overColumn: any = findColumnByCardId(overCardId)
-            console.log(overColumn, active, over);
             updateCardsWithDndkit(activeDraggingCardId, overColumn._id)
             if (!activeColumn || !overColumn) return
             if (oldColumnDraggingCard._id !== overColumn._id) {

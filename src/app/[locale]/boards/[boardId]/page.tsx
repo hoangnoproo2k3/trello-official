@@ -7,7 +7,6 @@ import { mapOrder } from '@/utils/sorts'
 
 const BoardId = async ({ params, searchParams }: any) => {
     const slug = params.boardId;
-    // console.log(searchParams.boardIdObj);
     const reponse = await getDetailBoardWithId(searchParams.boardIdObj)
     const reponseColumns = await getColumnsWithBoard({ boardId: searchParams.boardIdObj })
     // const orderedColumns = mapOrder(mockData?.board?.columns, mockData?.board?.columnOrderIds, '_id')
