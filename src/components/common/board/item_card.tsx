@@ -1,10 +1,10 @@
+/* eslint-disable @next/next/no-img-element */
 import Group_avatar from '@/app/_components/group_avatar'
 import { useSortable } from '@dnd-kit/sortable'
 import { CSS } from '@dnd-kit/utilities'
 import { Heart, MessageSquareMore, Paperclip } from 'lucide-react'
-import Image from 'next/image'
-import Modal_update_card from '../modal/Modal-update-card'
 import { useState } from 'react'
+import Modal_update_card from '../modal/Modal-update-card'
 
 const Item_body_card = ({ card, onInteraction }: any) => {
     const [showModal, setShowModal] = useState(false);
@@ -32,24 +32,23 @@ const Item_body_card = ({ card, onInteraction }: any) => {
         <>
             <div onClick={openModal} className={`rounded-lg bg-gray-200 mb-[10px] px-[20px] ${card?.FE_PlaceholderCard ? 'hidden' : 'block'} `} ref={setNodeRef} style={style} {...attributes} {...listeners}>
                 <div className='pt-[30px] pb-[16px]'>
-                    {card?.cover && <Image
-                        src={card?.cover}
-                        width={322}
-                        height={170}
-                        alt="Picture of the author"
+                    {card?.image && <img
+                        src={card?.image}
+                        alt="Preview"
+                        className="w-full h-full rounded-lg object-contain"
                     />}
                 </div>
-                <div className='flex'>
+                {/* <div className='flex'>
                     {card?.tagsData?.map((tag: any) => (
                         <div key={tag?.id} className={`w-[60px] h-[8px] mr-[8px] mb-[9px] rounded-sm`} style={{ backgroundColor: tag.color }}></div>
                     )
                     )}
-                </div>
+                </div> */}
                 <p className='whitespace-pre-line dark:text-black' >
                     {card?.title}
                 </p>
                 <p className='whitespace-pre-line  dark:text-black text-[13px] font-light opacity-[0.4] leading-[19px] pb-[30px]' >
-                    {card?.description}
+                    <div dangerouslySetInnerHTML={{ __html: card?.description?.length > 50 ? `${card?.description?.slice(0, 50)}...` : card?.description }} />
                 </p>
                 <div className={'flex justify-between items-center pb-[20px] '}>
                     <Group_avatar size={30} />

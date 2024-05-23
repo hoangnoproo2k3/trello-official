@@ -20,10 +20,19 @@ const Modal_update_card: React.FC<ModalCardProps> = ({ onClose, columnId, onRefe
     const [previewImage, setPreviewImage] = useState<string | null>(null);
 
     const handleImageChange = (e: any) => {
-        const selectedImage = e.target.files && e.target.files[0];
-        if (selectedImage) {
-            setImage(selectedImage);
-            setPreviewImage(URL.createObjectURL(selectedImage));
+        const file = e.target.files[0];
+        if (file) {
+            const validImageTypes = ['image/gif', 'image/jpeg', 'image/png'];
+            const fileType = file.type;
+
+            if (!validImageTypes.includes(fileType)) {
+                alert('Please select a valid image file (JPEG, PNG, GIF).');
+                return;
+            }
+            if (file) {
+                setImage(file);
+                setPreviewImage(URL.createObjectURL(file));
+            }
         }
     };
     const [isEditing, setIsEditing] = useState(false);
@@ -96,7 +105,7 @@ const Modal_update_card: React.FC<ModalCardProps> = ({ onClose, columnId, onRefe
                                         <p className="text-xs text-gray-500 dark:text-gray-400">SVG, PNG, JPG or GIF (MAX. 800x400px)</p>
                                     </div>
                                 )}
-                                <input id="dropzone-file" type="file" className="hidden" onChange={handleImageChange} />
+                                <input id="dropzone-file" type="file" className="hidden" onChange={handleImageChange} accept="image/*" />
                                 {previewImage && (
                                     <p
                                         className="flex gap-2 absolute bottom-0 right-0 mb-4 mr-4 px-4 py-2 bg-none text-white rounded hover:bg-[#a2918f] "

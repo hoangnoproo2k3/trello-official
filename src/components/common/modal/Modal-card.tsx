@@ -9,7 +9,6 @@ import { ImageUp } from 'lucide-react';
 import MarkdownIt from 'markdown-it';
 import React, { useState } from 'react';
 import 'react-markdown-editor-lite/lib/index.css';
-import Comment from '../action/comment';
 import Modal from './Modal';
 interface ModalCardProps {
     onClose: () => void;
@@ -20,35 +19,63 @@ interface ModalCardProps {
 const mdParser = new MarkdownIt();
 
 const ModalCard: React.FC<ModalCardProps> = ({ onClose, columnId, boardId, onRefetch }) => {
-    const [image, setImage] = useState<File | null>(null);
     const [previewImage, setPreviewImage] = useState<string | null>(null);
-
-    const handleImageChange = (e: any) => {
-        const selectedImage = e.target.files && e.target.files[0];
-        if (selectedImage) {
-            setImage(selectedImage);
-            setPreviewImage(URL.createObjectURL(selectedImage));
-        }
-    };
     const [isEditing, setIsEditing] = useState(false);
-    const [profileName, setProfileName] = useState("Profile");
+    const [cardName, setCardName] = useState("Name card");
+    const [descriptionHtml, setDescriptionHtml] = useState("");
     const [error, setError] = useState<any>();
 
-    const handleDoubleClick = () => {
+    const handleImageChange = async (e: any) => {
+        const file = e.target.files[0];
+        if (file) {
+            const validImageTypes = ['image/gif', 'image/jpeg', 'image/png'];
+            const fileType = file.type;
+
+            if (!validImageTypes.includes(fileType)) {
+                alert('Please select a valid image file (JPEG, PNG, GIF).');
+                return;
+            }
+            if (file) {
+                // setPreviewImage(URL.createObjectURL(file));
+                const formData = new FormData();
+                formData.append('file', file);
+                try {
+                    const response = await fetch(`${process.env.API_ROOT}/upload`, {
+                        method: 'POST',
+                        body: formData,
+                    });
+
+                    if (response.ok) {
+                        const result = await response.json();
+                        setPreviewImage(result.signedUrl)
+                    } else {
+                        console.error('File upload failed', response.statusText);
+                    }
+                } catch (error) {
+                    console.error('Error uploading file', error);
+                }
+            }
+        }
+    };
+    const handleClickTitle = () => {
         setIsEditing(true);
     };
-
     const handleBlur = () => {
         setIsEditing(false);
     };
-
     const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-        setProfileName(e.target.value);
+        setCardName(e.target.value);
     };
-    const [html, setHtml] = useState("");
+    const formDataCard = {
+        title: cardName,
+        columnId: columnId,
+        boardId: boardId,
+        description: descriptionHtml,
+        image: previewImage
+    }
     const handleCreateCard = async () => {
         try {
-            await createNewCard({ title: profileName, columnId: columnId, boardId: boardId });
+            await createNewCard(formDataCard);
             await onRefetch()
             onClose()
         } catch (error: unknown) {
@@ -100,7 +127,7 @@ const ModalCard: React.FC<ModalCardProps> = ({ onClose, columnId, boardId, onRef
                                         <p className="text-xs text-gray-500 dark:text-gray-400">SVG, PNG, JPG or GIF (MAX. 800x400px)</p>
                                     </div>
                                 )}
-                                <input id="dropzone-file" type="file" className="hidden" onChange={handleImageChange} />
+                                <input id="dropzone-file" type="file" className="hidden" onChange={handleImageChange} accept="image/*" />
                                 {previewImage && (
                                     <p
                                         className="flex gap-2 absolute bottom-0 right-0 mb-4 mr-4 px-4 py-2 bg-none text-white rounded hover:bg-[#a2918f] "
@@ -115,7 +142,6 @@ const ModalCard: React.FC<ModalCardProps> = ({ onClose, columnId, boardId, onRef
                                         onClick={() => {
                                             document.getElementById('dropzone-file')?.setAttribute('value', '');
                                             setPreviewImage(null);
-                                            setImage(null);
                                         }}
                                         className="px-4 py-2 bg-slate-400 text-red-800 rounded hover:bg-slate-500"
                                     >
@@ -123,35 +149,30 @@ const ModalCard: React.FC<ModalCardProps> = ({ onClose, columnId, boardId, onRef
                                     </button>
                                 </label>
                             )}
-
                         </div>
                         {isEditing ? (
                             <input
                                 type="text"
-                                value={profileName}
+                                value={cardName}
                                 onChange={handleChange}
                                 onBlur={handleBlur}
                                 autoFocus
                                 className='bg-transparent text-[#333] p-2 mb-2 w-full '
                             />
                         ) : (
-                            <h2 className="p-2 pl-0 pb-0 text-base font-semibold leading-7 text-gray-900" onClick={handleDoubleClick}>
-                                {profileName}
+                            <h2 className="p-2 pl-0 pb-0 text-base font-semibold leading-7 text-gray-900" onClick={handleClickTitle}>
+                                {cardName}
                             </h2>
                         )}
                         <div className='text-gray-900 text-[14px] m-2'>trong danh sách To do</div>
                         <h2 className="p-2 pl-0 pb-0 text-base font-semibold leading-7 text-gray-900">
                             Mô tả
                         </h2>
-                        <BlogEditor onChange={(e) => setHtml(e.html)} />
-                        <div className={''}>
+                        <BlogEditor onChange={(e) => setDescriptionHtml(e.html)} />
+                        <div className='text-gray-900 text-[14px] m-2'>
                             <h2>Preview</h2>
-                            <div dangerouslySetInnerHTML={{ __html: html }} />
+                            <div dangerouslySetInnerHTML={{ __html: descriptionHtml }} />
                         </div>
-                        <h2 className="p-2 pl-0 pb-0 text-base font-semibold leading-7 text-gray-900">
-                            Hoạt động
-                        </h2>
-                        <Comment />
                     </div>
                 </div>
                 <div className="mt-6 flex items-center justify-end gap-x-6">
