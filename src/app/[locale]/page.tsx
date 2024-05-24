@@ -1,36 +1,44 @@
+/* eslint-disable react-hooks/exhaustive-deps */
 /* eslint-disable @next/next/no-img-element */
 'use client'
-import { getLatestDocuments } from "@/apis/boardApi";
+import { getLatestDocuments, joinBoardWithMember } from "@/apis/boardApi";
 import Nav from "@/components/common/nav";
-import { usePathname } from "next/navigation";
+import { redirect, usePathname, useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 import DateDifferenceComponent from "../_components/DateDifferenceComponent";
+import { useSession } from "next-auth/react";
 const Index = () => {
   const currentPath = usePathname()
+  const { data: session } = useSession();
   const [listBoards, setListBoards] = useState<any[]>([]);
-  const userId = localStorage.getItem('userId');
   const [currentPage, setCurrentPage] = useState(1);
+  const router = useRouter()
   const fetchLatestDocuments = async (currentPage: any) => {
     try {
-      const latestDocuments = await getLatestDocuments(currentPage, { ownerId: userId });
-      setListBoards(latestDocuments?.message?.getBoards);
+      if (session?.user) {
+        const latestDocuments = await getLatestDocuments(currentPage, { ownerId: localStorage.getItem('userId') });
+        setListBoards(latestDocuments?.message?.getBoards);
+      } else {
+        const latestDocuments = await getLatestDocuments(currentPage, { ownerId: null });
+        setListBoards(latestDocuments?.message?.getBoards);
+      }
     } catch (error) {
       console.error('Error fetching latest documents:', error);
     }
   };
+
   useEffect(() => {
-    fetchLatestDocuments(currentPage)
-  }, []);
+    fetchLatestDocuments(currentPage);
+  }, [currentPage, fetchLatestDocuments]);
+
   const handlePrevPage = () => {
     if (currentPage > 1) {
       setCurrentPage(currentPage - 1);
-      fetchLatestDocuments(currentPage - 1);
     }
   };
 
   const handleNextPage = () => {
     setCurrentPage(currentPage + 1);
-    fetchLatestDocuments(currentPage + 1);
   };
   return (
     <div className="bg-slate-50 dark:bg-background h-screen flex">
@@ -88,11 +96,18 @@ const Index = () => {
                       </svg>
                       {item.createdAt && <DateDifferenceComponent apiDate={item.createdAt} />}
                     </div>
-                    <a
-                      href={`${currentPath}/${item?.slug}?boardIdObj=${item?._id}`}
+                    <button
+                      onClick={async () => {
+                        await joinBoardWithMember({
+                          boardId: item._id,
+                          ownerId: localStorage.getItem('userId')
+                        })
+                        router.push(`${currentPath}/boards`)
+                      }}
+                      // href={`${currentPath}/${item?.slug}?boardIdObj=${item?._id}`}
                       className="inline-flex items-center px-3 py-2 text-sm font-medium text-center text-white bg-blue-700 rounded-lg hover:bg-blue-800 focus:ring-4 focus:outline-none focus:ring-blue-300 dark:bg-blue-600 dark:hover:bg-blue-700 dark:focus:ring-blue-800"
                     >
-                      Read more
+                      Join now
                       <svg
                         className="rtl:rotate-180 w-3.5 h-3.5 ms-2"
                         aria-hidden="true"
@@ -108,7 +123,7 @@ const Index = () => {
                           d="M1 5h12m0 0L9 1m4 4L9 9"
                         />
                       </svg>
-                    </a>
+                    </button>
                   </div>
                 </div>
               </div>

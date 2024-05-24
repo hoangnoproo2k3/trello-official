@@ -54,7 +54,20 @@ export const getPaginatedDocuments = async (pageNumber: any, pageSize: any, owne
         throw error;
     }
 }
-export const getLatestDocuments = async (currentPage: any, data: any) => {
+export const joinBoardWithMember = async (data: any) => {
+    try {
+        const response = await axiosInstance.post(`/v1/boards/join-board`, data);
+        if (response.status === 200) {
+            return response.data;
+        } else {
+            console.error('Failed call API:', response.status, response.statusText);
+            throw new Error(`Failed with status: ${response.status}`);
+        }
+    } catch (error) {
+        throw error;
+    }
+}
+export const getLatestDocuments = async (currentPage: any, data?: any) => {
     try {
         const response = await axiosInstance.post(`/v1/boards/list-board-public?currentPage=${currentPage}`, data);
         if (response.status === 200) {
