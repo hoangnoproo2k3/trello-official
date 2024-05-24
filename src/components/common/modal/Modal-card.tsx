@@ -35,25 +35,23 @@ const ModalCard: React.FC<ModalCardProps> = ({ onClose, columnId, boardId, onRef
                 alert('Please select a valid image file (JPEG, PNG, GIF).');
                 return;
             }
-            if (file) {
-                // setPreviewImage(URL.createObjectURL(file));
-                const formData = new FormData();
-                formData.append('file', file);
-                try {
-                    const response = await fetch(`${process.env.API_ROOT}/upload`, {
-                        method: 'POST',
-                        body: formData,
-                    });
+            // setPreviewImage(URL.createObjectURL(file));
+            const formData = new FormData();
+            formData.append('file', file);
+            try {
+                const response = await fetch(`${process.env.API_ROOT}/upload`, {
+                    method: 'POST',
+                    body: formData,
+                });
 
-                    if (response.ok) {
-                        const result = await response.json();
-                        setPreviewImage(result.signedUrl)
-                    } else {
-                        console.error('File upload failed', response.statusText);
-                    }
-                } catch (error) {
-                    console.error('Error uploading file', error);
+                if (response.ok) {
+                    const result = await response.json();
+                    setPreviewImage(result.signedUrl)
+                } else {
+                    console.error('File upload failed', response.statusText);
                 }
+            } catch (error) {
+                console.error('Error uploading file', error);
             }
         }
     };

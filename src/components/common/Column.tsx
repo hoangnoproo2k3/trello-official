@@ -96,7 +96,7 @@ const Column = ({ column, onInteraction }: any) => {
                     {column?.cards?.length > 0 && (
                         <SortableContext items={column?.cards?.map((c: any) => c._id)} strategy={verticalListSortingStrategy}>
                             {column?.cards?.map((card: any, index: any) => (
-                                <Item_body_card key={index} card={card} />
+                                <Item_body_card key={index} card={card} onRefetch={onInteraction} />
                             ))}
                         </SortableContext>
                     )}

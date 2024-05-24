@@ -6,7 +6,7 @@ import { Heart, MessageSquareMore, Paperclip } from 'lucide-react'
 import { useState } from 'react'
 import Modal_update_card from '../modal/Modal-update-card'
 
-const Item_body_card = ({ card, onInteraction }: any) => {
+const Item_body_card = ({ card, onRefetch }: any) => {
     const [showModal, setShowModal] = useState(false);
 
     const openModal = () => {
@@ -65,7 +65,7 @@ const Item_body_card = ({ card, onInteraction }: any) => {
                     </div>
                 </div>
             </div>
-            {showModal && (<Modal_update_card onClose={closeModal} columnId={card?._id} onRefetch={onInteraction} />)}
+            {showModal && (<Modal_update_card onClose={closeModal} cardId={card?._id} onRefetch={onRefetch} />)}
 
         </>
     )

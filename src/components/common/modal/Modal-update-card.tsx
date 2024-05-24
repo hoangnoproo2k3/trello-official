@@ -1,25 +1,35 @@
 /* eslint-disable @next/next/no-img-element */
 
-import { createNewCard } from '@/apis/cardApi';
+import { getDetailCardWithId, updateCard } from '@/apis/cardApi';
 import BlogEditor from '@/components/BlogEditor';
-import axios from 'axios';
-import { ImageUp } from 'lucide-react';
+import { Edit, ImageUp, Save } from 'lucide-react';
 import MarkdownIt from 'markdown-it';
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import 'react-markdown-editor-lite/lib/index.css';
-import Comment from '../action/comment';
 import Modal from './Modal';
 interface ModalCardProps {
     onClose: () => void;
     onRefetch: () => void;
-    columnId: any
+    cardId: any
 }
 const mdParser = new MarkdownIt();
-const Modal_update_card: React.FC<ModalCardProps> = ({ onClose, columnId, onRefetch }) => {
-    const [image, setImage] = useState<File | null>(null);
-    const [previewImage, setPreviewImage] = useState<string | null>(null);
-
-    const handleImageChange = (e: any) => {
+const Modal_update_card: React.FC<ModalCardProps> = ({ onClose, cardId, onRefetch }) => {
+    const [formDataCard, setFormDataCard] = useState<any>();
+    const [isEditing, setIsEditing] = useState(false);
+    const [isEditingDescription, setIsEditingDescription] = useState(false);
+    // Get data card
+    useEffect(() => {
+        fetchDataCardWithId(cardId)
+    }, [cardId])
+    const fetchDataCardWithId = async (cardId: any) => {
+        try {
+            const response = await getDetailCardWithId(cardId)
+            setFormDataCard(response.getCards)
+        } catch (error) {
+            console.error('Error calling another API:', error);
+        }
+    }
+    const handleImageChange = async (e: any) => {
         const file = e.target.files[0];
         if (file) {
             const validImageTypes = ['image/gif', 'image/jpeg', 'image/png'];
@@ -29,44 +39,59 @@ const Modal_update_card: React.FC<ModalCardProps> = ({ onClose, columnId, onRefe
                 alert('Please select a valid image file (JPEG, PNG, GIF).');
                 return;
             }
-            if (file) {
-                setImage(file);
-                setPreviewImage(URL.createObjectURL(file));
+            const formDataCard = new FormData();
+            formDataCard?.append('file', file);
+            try {
+                const response = await fetch(`${process.env.API_ROOT}/upload`, {
+                    method: 'POST',
+                    body: formDataCard,
+                });
+
+                if (response.ok) {
+                    const result = await response.json();
+                    setFormDataCard({
+                        ...formDataCard,
+                        image: result?.signedUrl
+                    });
+                    await updateCard(cardId, {
+                        ...formDataCard,
+                        image: result?.signedUrl
+                    })
+                    fetchDataCardWithId(cardId)
+                } else {
+                    console.error('File upload failed', response.statusText);
+                }
+            } catch (error) {
+                console.error('Error uploading file', error);
             }
         }
     };
-    const [isEditing, setIsEditing] = useState(false);
-    const [profileName, setProfileName] = useState("Profile");
-    const [error, setError] = useState<any>();
-
     const handleDoubleClick = () => {
         setIsEditing(true);
     };
-
-    const handleBlur = () => {
+    const handleBlur = async () => {
         setIsEditing(false);
+        await updateCard(cardId, formDataCard)
     };
-
     const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-        setProfileName(e.target.value);
+        setFormDataCard({
+            ...formDataCard,
+            title: e.target.value,
+        });
     };
-    const [html, setHtml] = useState("");
-    const handleCreateCard = async () => {
-        try {
-            // await createNewCard({ title: profileName, columnId: columnId, boardId: boardId });
-            await onRefetch()
-            onClose()
-        } catch (error: unknown) {
-            // Kiểm tra kiểu của error trước khi truy cập các thuộc tính
-            if (axios.isAxiosError(error)) {
-                setError(error.response?.data?.message || error.message);
-            } else {
-                setError('An unexpected error occurred');
-            }
-        }
+    const handleChangeDesc = async (e: any) => {
+        setFormDataCard({ ...formDataCard, description: e.html })
+        await updateCard(cardId, {
+            ...formDataCard,
+            description: e.html
+        })
+    };
+    const handleClose = async () => {
+        onClose()
+        await onRefetch()
     }
     return (
-        <Modal onClose={onClose}>
+        <Modal onClose={handleClose}>
             <form>
                 <div className="space-y-12">
                     <div className="border-b border-gray-900/10 pb-12">
@@ -75,14 +100,14 @@ const Modal_update_card: React.FC<ModalCardProps> = ({ onClose, columnId, onRefe
                                 htmlFor="dropzone-file"
                                 className="flex flex-col items-center justify-center w-full h-64 border-2 border-gray-300 border-dashed rounded-lg cursor-pointer bg-gray-50 dark:hover:bg-bray-800 dark:bg-gray-700 hover:bg-gray-100 dark:border-gray-600 dark:hover:border-gray-500 dark:hover:bg-gray-600 relative"
                             >
-                                {previewImage && (
+                                {formDataCard?.image && (
                                     <img
-                                        src={previewImage}
+                                        src={formDataCard?.image}
                                         alt="Preview"
                                         className="w-full h-full rounded-lg object-contain"
                                     />
                                 )}
-                                {!previewImage && (
+                                {!formDataCard?.image && (
                                     <div className="flex flex-col items-center justify-center pt-5 pb-6">
                                         <svg
                                             className="w-8 h-8 mb-4 text-gray-500 dark:text-gray-400"
@@ -106,21 +131,27 @@ const Modal_update_card: React.FC<ModalCardProps> = ({ onClose, columnId, onRefe
                                     </div>
                                 )}
                                 <input id="dropzone-file" type="file" className="hidden" onChange={handleImageChange} accept="image/*" />
-                                {previewImage && (
+                                {formDataCard?.image && (
                                     <p
-                                        className="flex gap-2 absolute bottom-0 right-0 mb-4 mr-4 px-4 py-2 bg-none text-white rounded hover:bg-[#a2918f] "
+                                        className="flex gap-2 absolute bottom-0 right-0 mb-4 mr-4 px-4 py-2 bg-none text-white rounded bg-[#9f9f9f] hover:bg-[#a2918f] "
                                     >
                                         <ImageUp /> <span className='font-light'>Ảnh bìa</span>
                                     </p>
                                 )}
                             </label>
-                            {previewImage && (
+                            {formDataCard?.image && (
                                 <label htmlFor="dropzone-file" className="absolute top-0 right-0 mt-4 mr-4">
                                     <button
-                                        onClick={() => {
+                                        onClick={async () => {
                                             document.getElementById('dropzone-file')?.setAttribute('value', '');
-                                            setPreviewImage(null);
-                                            setImage(null);
+                                            setFormDataCard({
+                                                ...formDataCard,
+                                                image: null
+                                            })
+                                            await updateCard(cardId, {
+                                                ...formDataCard,
+                                                image: null
+                                            })
                                         }}
                                         className="px-4 py-2 bg-slate-400 text-red-800 rounded hover:bg-slate-500"
                                     >
@@ -133,7 +164,7 @@ const Modal_update_card: React.FC<ModalCardProps> = ({ onClose, columnId, onRefe
                         {isEditing ? (
                             <input
                                 type="text"
-                                value={profileName}
+                                value={formDataCard?.title}
                                 onChange={handleChange}
                                 onBlur={handleBlur}
                                 autoFocus
@@ -141,39 +172,40 @@ const Modal_update_card: React.FC<ModalCardProps> = ({ onClose, columnId, onRefe
                             />
                         ) : (
                             <h2 className="p-2 pl-0 pb-0 text-base font-semibold leading-7 text-gray-900" onClick={handleDoubleClick}>
-                                {profileName}
+                                {formDataCard?.title}
                             </h2>
                         )}
                         <div className='text-gray-900 text-[14px] m-2'>trong danh sách To do</div>
-                        <h2 className="p-2 pl-0 pb-0 text-base font-semibold leading-7 text-gray-900">
-                            Mô tả
-                        </h2>
-                        <BlogEditor onChange={(e) => setHtml(e.html)} />
-                        <div className={''}>
-                            <h2>Preview</h2>
-                            <div dangerouslySetInnerHTML={{ __html: html }} />
+                        <div className="flex items-center">
+                            <h2 className="p-2 pl-0 pb-0 text-base font-semibold leading-7 text-gray-900">Mô tả</h2>
+                            {isEditingDescription ? (
+                                <Save
+                                    className="w-4 h-4 ml-2 text-gray-500 cursor-pointer"
+                                    onClick={() => setIsEditingDescription(false)}
+                                />
+                            ) : (
+                                <Edit
+                                    className="w-4 h-4 ml-2 text-gray-500 cursor-pointer"
+                                    onClick={() => setIsEditingDescription(true)}
+                                />
+                            )}
                         </div>
-                        <h2 className="p-2 pl-0 pb-0 text-base font-semibold leading-7 text-gray-900">
+                        {isEditingDescription ? (
+                            <BlogEditor
+                                value={formDataCard?.description}
+                                onChange={handleChangeDesc}
+                            />
+                        ) : (
+                            <div className='text-gray-900 text-[14px] m-2'>
+                                <p>Preview</p>
+                                <div dangerouslySetInnerHTML={{ __html: formDataCard?.description }} />
+                            </div>
+                        )}
+                        {/* <h2 className="p-2 pl-0 pb-0 text-base font-semibold leading-7 text-gray-900">
                             Hoạt động
                         </h2>
-                        <Comment />
+                        <Comment /> */}
                     </div>
-                </div>
-                <div className="mt-6 flex items-center justify-end gap-x-6">
-                    <button
-                        type="button"
-                        className="text-sm font-semibold leading-6 text-gray-900"
-                        onClick={onClose}
-                    >
-                        Cancel
-                    </button>
-                    <button
-                        onClick={handleCreateCard}
-                        type='button'
-                        className="rounded-md bg-indigo-600 px-3 py-2 text-sm font-semibold text-white shadow-sm hover:bg-indigo-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600"
-                    >
-                        Update card
-                    </button>
                 </div>
             </form>
 

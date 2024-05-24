@@ -1,9 +1,9 @@
 // Import thư viện và stylesheet của react-quill
 // const ReactQuill = dynamic(() => import('react-quill'), { ssr: false });
+import { htmlToMarkdown } from "@/lib/parser";
+import { useCallback, useEffect, useRef, useState } from 'react';
 import ReactQuill from "react-quill";
 import 'react-quill/dist/quill.snow.css';
-import { htmlToMarkdown, markdownToHtml } from "@/lib/parser";
-import { useCallback, useRef, useState } from 'react';
 
 export interface EditorContentChanged {
     html: string;
@@ -14,8 +14,11 @@ export interface EditorPropss {
     onChange?: (changes: EditorContentChanged) => void;
 }
 const BlogEditor = (props: EditorPropss) => {
-    const [value, setValue] = useState<string>(markdownToHtml(props.value || ""));
+    const [value, setValue] = useState<any>();
     const reactQuillRef = useRef<ReactQuill>(null);
+    useEffect(() => {
+        setValue(props.value);
+    }, [props.value]);
     // Hàm xử lý khi nội dung trình soạn thảo thay đổi
     const onChange = (content: string) => {
         setValue(content);
@@ -65,7 +68,6 @@ const BlogEditor = (props: EditorPropss) => {
                     toolbar: {
                         container: [
                             [{ 'header': [1, 2, 3, 4, 5, 6, false] }],
-                            [{ size: [] }],
                             ['bold', 'italic', 'underline', 'strike'],
                             [{ 'color': [] }, { 'background': [] }],
                             ['link', 'image', 'video'],
