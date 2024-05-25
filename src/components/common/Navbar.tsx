@@ -8,7 +8,7 @@ import { useCallback, useEffect, useRef, useState, useMemo } from 'react';
 import debounce from 'lodash/debounce';
 import { getSearchUsers } from '@/apis/userApi';
 
-const Navbar = ({ title_board, visibility }: any) => {
+const Navbar = ({ boardId, title_board, visibility, getMembersInBoard }: any) => {
     const [searchTerm, setSearchTerm] = useState('');
     const [searchResults, setSearchResults] = useState([]);
     const [showDropdown, setShowDropdown] = useState(false);
@@ -39,7 +39,7 @@ const Navbar = ({ title_board, visibility }: any) => {
         debounce(async () => {
             isLoadingRef.current = true;
             try {
-                const res = await getSearchUsers(searchTerm);
+                const res = await getSearchUsers(searchTerm, { boardId });
                 if (Array.isArray(res.getUsers)) {
                     setSearchResults(res.getUsers);
                 }
@@ -61,6 +61,7 @@ const Navbar = ({ title_board, visibility }: any) => {
         setSearchTerm('');
         setShowDropdown(false)
     };
+
     return (
         <div className='pt-[30px] flex justify-between px-[28px] pb-[18px]'>
             <div className={s["container_navbar_left"] + ' hidden md:flex items-center'}>
@@ -76,13 +77,10 @@ const Navbar = ({ title_board, visibility }: any) => {
             </div>
             <div className='flex items-center'>
                 <div className='mr-[20px] md:mr-[40px]'>
-                    <AvatarGroup isBordered max={3} total={10}>
-                        <Avatar src="https://i.pravatar.cc/150?u=a042581f4e29026024d" />
-                        <Avatar src="https://i.pravatar.cc/150?u=a04258a2462d826712d" />
-                        <Avatar src="https://i.pravatar.cc/150?u=a042581f4e29026704d" />
-                        <Avatar src="https://i.pravatar.cc/150?u=a04258114e29026302d" />
-                        <Avatar src="https://i.pravatar.cc/150?u=a04258114e29026702d" />
-                        <Avatar src="https://i.pravatar.cc/150?u=a04258114e29026708c" />
+                    <AvatarGroup isBordered max={3} total={getMembersInBoard?.count}>
+                        {getMembersInBoard?.users.map((user: any) =>
+                            <Avatar key={user._id} src={user.avatar} />
+                        )}
                     </AvatarGroup>
                 </div>
                 <button className="relative mb-3 cursor-pointer ">

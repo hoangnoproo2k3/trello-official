@@ -67,6 +67,19 @@ export const joinBoardWithMember = async (data: any) => {
         throw error;
     }
 }
+export const getListMembersInBoard = async (data: any) => {
+    try {
+        const response = await axiosInstance.post(`/v1/boards/list-member`, data);
+        if (response.status === 200) {
+            return response.data;
+        } else {
+            console.error('Failed call API:', response.status, response.statusText);
+            throw new Error(`Failed with status: ${response.status}`);
+        }
+    } catch (error) {
+        throw error;
+    }
+}
 export const getLatestDocuments = async (currentPage: any, data?: any) => {
     try {
         const response = await axiosInstance.post(`/v1/boards/list-board-public?currentPage=${currentPage}`, data);

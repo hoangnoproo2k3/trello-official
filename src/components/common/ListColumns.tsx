@@ -267,9 +267,8 @@ const ListColumns = ({ boards, boardId }: any) => {
             }
             return;
         }
-
         try {
-            await createNewColumn({ title: newBoardName, boardId: boardId });
+            await createNewColumn({ title: newBoardName.trim(), boardId: boardId });
             setShowNewBoardForm(false);
             setNewBoardName('');
             fetchListBoards();

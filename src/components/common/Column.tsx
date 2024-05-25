@@ -12,7 +12,6 @@ const Column = ({ column, onInteraction }: any) => {
     const [showModal, setShowModal] = useState(false);
     const [showDropdown, setShowDropdown] = useState(false);
     const dropdownRef = useRef<HTMLDivElement | null>(null);
-    const [orderedCards, setOrderedCards] = useState<any[]>([]);
 
     const openModal = () => {
         setShowModal(true);

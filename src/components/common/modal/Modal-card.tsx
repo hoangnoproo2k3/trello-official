@@ -19,7 +19,7 @@ interface ModalCardProps {
 const mdParser = new MarkdownIt();
 
 const ModalCard: React.FC<ModalCardProps> = ({ onClose, columnId, boardId, onRefetch }) => {
-    const [previewImage, setPreviewImage] = useState<string | null>(null);
+    const [previewImage, setPreviewImage] = useState<string | null>('');
     const [isEditing, setIsEditing] = useState(false);
     const [cardName, setCardName] = useState("Name card");
     const [descriptionHtml, setDescriptionHtml] = useState("");
@@ -64,14 +64,18 @@ const ModalCard: React.FC<ModalCardProps> = ({ onClose, columnId, boardId, onRef
     const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
         setCardName(e.target.value);
     };
-    const formDataCard = {
-        title: cardName,
-        columnId: columnId,
-        boardId: boardId,
-        description: descriptionHtml,
-        image: previewImage
-    }
+
     const handleCreateCard = async () => {
+        const formDataCard: any = {
+            title: cardName.trim(),
+            columnId: columnId,
+            boardId: boardId,
+            description: descriptionHtml.trim()
+        };
+
+        if (previewImage) {
+            formDataCard.image = previewImage;
+        }
         try {
             await createNewCard(formDataCard);
             await onRefetch()

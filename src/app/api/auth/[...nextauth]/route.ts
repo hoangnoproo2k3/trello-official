@@ -25,7 +25,11 @@ const authOptions = {
                 }
             }
             return true;
-        }
+        },
+        async redirect({ url, baseUrl }: any) {
+            const urlNew = baseUrl + '/vi/boards'
+            return urlNew;
+        },
     },
     secret: process.env.GOOGLE_CLIENT_SECRET,
 };

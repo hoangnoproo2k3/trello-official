@@ -1,12 +1,11 @@
-/* eslint-disable react-hooks/exhaustive-deps */
 /* eslint-disable @next/next/no-img-element */
 'use client'
 import { getLatestDocuments, joinBoardWithMember } from "@/apis/boardApi";
 import Nav from "@/components/common/nav";
-import { redirect, usePathname, useRouter } from "next/navigation";
+import { useSession } from "next-auth/react";
+import { usePathname, useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 import DateDifferenceComponent from "../_components/DateDifferenceComponent";
-import { useSession } from "next-auth/react";
 const Index = () => {
   const currentPath = usePathname()
   const { data: session } = useSession();
@@ -29,7 +28,7 @@ const Index = () => {
 
   useEffect(() => {
     fetchLatestDocuments(currentPage);
-  }, [currentPage, fetchLatestDocuments]);
+  }, [currentPage, session?.user]);
 
   const handlePrevPage = () => {
     if (currentPage > 1) {

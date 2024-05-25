@@ -29,9 +29,9 @@ export const getDetailUser = async (email: any) => {
         throw error;
     }
 }
-export const getSearchUsers = async (searchTerm: any) => {
+export const getSearchUsers = async (searchTerm: any, boardId: any) => {
     try {
-        const response = await axiosInstance.post(`/v1/users/search?q=${searchTerm}`);
+        const response = await axiosInstance.post(`/v1/users/search?q=${searchTerm}`, boardId);
         if (response.status === 200) {
             return response.data;
         } else {
