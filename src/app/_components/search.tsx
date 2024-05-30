@@ -116,7 +116,7 @@ const Search = React.memo(({ placeholder, userId }: any) => {
                                 <Link
                                     key={result._id}
                                     onClick={() => setShowModal(false)}
-                                    href={`${checkUrl ? '/vi' : '/en'}/boards/${result?.slug}`}
+                                    href={`${checkUrl ? '/vi' : '/en'}/boards/${result?.slug}?boardIdObj=${result?._id}`}
                                     className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 dark:text-white dark:hover:bg-gray-700"
                                 >
                                     {result.title}

@@ -19,7 +19,12 @@ const Boards = () => {
     const [desBoard, setDesBoard] = useState('');
     const [boardBackground, setBoardBackground] = useState('#ABB8C3');
     const [visibility, setVisibility] = useState('public');
-    const userId = localStorage.getItem('userId');
+    const { data: session } = useSession();
+    let userId: any;
+    if (session && session.user && "id" in session.user) {
+        userId = session.user.id;
+    }
+
     const [currentPage, setCurrentPage] = useState(1);
     const [totalPage, setTotalPage] = useState(0);
     const [error, setError] = useState<string | null>(null);
@@ -45,7 +50,11 @@ const Boards = () => {
     const handleDescriptionChange = (event: React.ChangeEvent<HTMLTextAreaElement>) => {
         setDesBoard(event.target.value);
     };
-
+    useEffect(() => {
+        if (userId != undefined) {
+            fetchListBoards(currentPage, itemsPerPage)
+        }
+    }, [userId])
     const fetchListBoards = async (currentPage: number, pageSize: number) => {
         if (userId) {
             try {
@@ -96,7 +105,6 @@ const Boards = () => {
         }
     };
 
-    const { data: session } = useSession();
 
     useEffect(() => {
         fetchListBoards(currentPage, itemsPerPage);

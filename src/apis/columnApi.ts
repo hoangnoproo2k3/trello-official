@@ -1,4 +1,4 @@
-// "use server"
+"use server"
 import axiosInstance from './axiosInstance';
 export const createNewColumn = async (data: any) => {
     try {

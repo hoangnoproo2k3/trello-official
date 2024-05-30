@@ -19,12 +19,23 @@ const authOptions = {
                     name: user.name
                 };
                 try {
-                    await saveNewUser(newUser);
+                    const savedUser = await saveNewUser(newUser);
+                    user.id = savedUser.message._id;
                 } catch (error) {
                     console.error('Error saving user data to external API:', error);
                 }
             }
             return true;
+        },
+        async jwt({ token, user }: any) {
+            if (user) {
+                token.id = user.id;
+            }
+            return token;
+        },
+        async session({ session, token }: any) {
+            session.user.id = token.id;
+            return session;
         },
         async redirect({ url, baseUrl }: any) {
             const urlNew = baseUrl + '/vi/boards'

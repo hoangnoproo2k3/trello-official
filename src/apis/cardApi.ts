@@ -1,3 +1,4 @@
+'use server'
 import axiosInstance from './axiosInstance';
 export const createNewCard = async (data: any) => {
     try {
