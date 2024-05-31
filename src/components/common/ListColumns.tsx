@@ -342,7 +342,7 @@ const ListColumns = ({ boards, boardId, ownerId }: any) => {
                                 className='flex justify-between items-center h-[50px] flex-shrink-0 cursor-pointer'
                                 onClick={handleAddNewBoardClick}
                             >
-                                <p className='text-base font-medium dark:text-black'>+ Add new board</p>
+                                <p className='text-base font-medium dark:text-black'>+ Add new column</p>
                             </div>
                         ) : (
                             <div className="w-72 p-4 flex-shrink-0">

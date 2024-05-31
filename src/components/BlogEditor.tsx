@@ -22,7 +22,6 @@ const BlogEditor = (props: EditorPropss) => {
     // Hàm xử lý khi nội dung trình soạn thảo thay đổi
     const onChange = (content: string) => {
         setValue(content);
-
         if (props.onChange) {
             props.onChange({
                 html: content,
@@ -82,7 +81,7 @@ const BlogEditor = (props: EditorPropss) => {
                             ['clean'],
                         ],
                         handlers: {
-                            image: imageHandler,
+                            // image: imageHandler,
                         },
                     },
                     clipboard: {

@@ -1,421 +1,125 @@
 /* eslint-disable @next/next/no-img-element */
-
+import { createCommentInCard, deleteCommentInCard, getDetailCardWithId } from "@/apis/cardApi";
 import BlogEditor from "@/components/BlogEditor"
-import { useState } from "react";
+import { Trash } from "lucide-react";
+import { useSession } from "next-auth/react";
+import { useEffect, useState } from "react";
 
-const Comment = () => {
+const Comment = ({ cardId }: any) => {
     const [html, setHtml] = useState("");
+    const { data: session } = useSession();
+    const [formDataCard, setFormDataCard] = useState<any>();
+    const handleComment = async () => {
+        await createCommentInCard(cardId, {
+            name: session?.user?.name,
+            content: html
+        })
+        setHtml('')
+        fetchDataCardWithId(cardId)
+    }
+    const handleDelete = async (commentID: any) => {
+        await deleteCommentInCard(cardId, { commentID: commentID })
+        fetchDataCardWithId(cardId)
+    }
+    // Get data card
+    useEffect(() => {
+        fetchDataCardWithId(cardId)
+    }, [cardId])
+    const fetchDataCardWithId = async (cardId: any) => {
+        try {
+            const response = await getDetailCardWithId(cardId)
+            setFormDataCard(response.getCards)
+        } catch (error) {
+            console.error('Error calling another API:', error);
+        }
+    }
 
     return (
-        <section className="bg-white dark:bg-gray-900 py-8 lg:py-16 antialiased">
-            <div className="mx-auto px-4">
+        <section className="bg-white  py-8 lg:py-16 antialiased" draggable="false">
+            <div className="mx-auto px-4 text-black">
                 <div className="mb-6">
                     <div className="py-2 px-4 mb-4 bg-white rounded-lg rounded-t-lg border border-gray-200 dark:bg-gray-400 dark:border-gray-700">
                         <label htmlFor="comment" className="sr-only">
                             Your comment
                         </label>
-                        <BlogEditor onChange={(e) => setHtml(e.html)} />
+                        <BlogEditor value={html} onChange={(e) => setHtml(e.html)} />
                     </div>
                     <button
-                        type="submit"
-                        className="inline-flex items-center py-2.5 px-4 text-xs font-medium text-center text-white bg-primary-700 rounded-lg focus:ring-4 focus:ring-primary-200 dark:focus:ring-primary-900 hover:bg-primary-800"
+                        onClick={handleComment}
+                        type="button"
+                        className="inline-flex items-center py-2.5 px-4 text-xs font-medium text-center text-black bg-primary-700 rounded-lg focus:ring-4 focus:ring-primary-200 dark:focus:ring-primary-900 hover:bg-primary-800"
                     >
                         Post comment
                     </button>
                 </div>
+                {formDataCard?.comments === undefined ? (
+                    <div>Loading comments...</div>
+                ) : formDataCard.comments.length > 0 ? (
+                    formDataCard.comments
+                        .slice()
+                        .sort((a: any, b: any) => new Date(b.date).getTime() - new Date(a.date).getTime())
+                        .map((item: any) => (
+                            <article className="p-6 text-base bg-white rounded-lg" key={item._id}>
+                                <footer className="flex justify-between items-center mb-2">
+                                    <div className="flex items-center">
+                                        <p className="inline-flex items-center mr-3 text-sm text-gray-900 font-semibold">
+                                            <img
+                                                className="mr-2 w-6 h-6 rounded-full"
+                                                src="https://flowbite.com/docs/images/people/profile-picture-2.jpg"
+                                                alt="Michael Gough"
+                                            />
+                                            {item.name}
+                                        </p>
+                                        <p className="text-sm text-gray-600 dark:text-gray-400">
+                                            <time dateTime={new Date(item.date).toISOString()} title={new Date(item.date).toLocaleString()}>
+                                                {new Date(item.date).toLocaleString()}
+                                            </time>
+                                        </p>
+                                    </div>
+                                    <button type="button" className="text-gray-500 dark:text-gray-400 hover:text-red-500" onClick={() => handleDelete(item?._id)}>
+                                        <Trash size={18} />
+                                    </button>
+                                    {/* {showConfirmation && (
+                                        <div className="fixed z-10 inset-0 overflow-y-auto">
+                                            <div className="flex items-end justify-center min-h-screen pt-4 px-4 pb-20 text-center sm:block sm:p-0">
+                                                <div className="fixed inset-0 transition-opacity" aria-hidden="true">
+                                                    <div className="absolute inset-0 bg-gray-500 opacity-40"></div>
+                                                </div>
+                                                <span className="hidden sm:inline-block sm:align-middle sm:h-screen" aria-hidden="true">&#8203;</span>
+                                                <div className="inline-block align-bottom bg-white rounded-lg text-left overflow-hidden shadow-xl transform transition-all sm:my-8 sm:align-middle sm:max-w-lg sm:w-full">
+                                                    <div className="bg-white px-4 pt-5 pb-4 sm:p-6 sm:pb-4">
+                                                        <div className="sm:flex sm:items-start">
+                                                            <div className="mx-auto flex-shrink-0 flex items-center justify-center h-12 w-12 rounded-full bg-red-100 sm:mx-0 sm:h-10 sm:w-10">
+                                                                <Trash className="h-6 w-6 text-red-600" />
+                                                            </div>
+                                                            <div className="mt-3 text-center sm:mt-0 sm:ml-4 sm:text-left">
+                                                                <h3 className="text-lg leading-6 font-medium text-gray-900" >Xác nhận xóa</h3>
+                                                                <div className="mt-2">
+                                                                    <p className="text-sm text-gray-500">Bạn có chắc muốn xóa bình luận này?</p>
+                                                                </div>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                    <div className="bg-gray-50 px-4 py-3 sm:px-6 sm:flex sm:flex-row-reverse">
+                                                        <button onClick={() => handleDistroy(item._id)} type="button" className="w-full inline-flex justify-center rounded-md border border-transparent shadow-sm px-4 py-2 bg-red-600 text-base font-medium text-white hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500 sm:ml-3 sm:w-auto sm:text-sm">
+                                                            Xóa
+                                                        </button>
+                                                        <button onClick={() => setShowConfirmation(false)} type="button" className="mt-3 w-full inline-flex justify-center rounded-md border border-gray-300 shadow-sm px-4 py-2 bg-white text-base font-medium text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 sm:mt-0 sm:ml-3 sm:w-auto sm:text-sm">
+                                                            Hủy
+                                                        </button>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    )} */}
+                                </footer>
+                                <div dangerouslySetInnerHTML={{ __html: item.content }} />
+                            </article>
+                        ))
+                ) : (
+                    <p>No comments available</p>
+                )}
 
-                <article className="p-6 text-base bg-white rounded-lg dark:bg-gray-900">
-                    <footer className="flex justify-between items-center mb-2">
-                        <div className="flex items-center">
-                            <p className="inline-flex items-center mr-3 text-sm text-gray-900 dark:text-white font-semibold">
-                                <img
-                                    className="mr-2 w-6 h-6 rounded-full"
-                                    src="https://flowbite.com/docs/images/people/profile-picture-2.jpg"
-                                    alt="Michael Gough"
-                                />
-                                Michael Gough
-                            </p>
-                            <p className="text-sm text-gray-600 dark:text-gray-400">
-                                <time dateTime="2022-02-08" title="February 8th, 2022">
-                                    Feb. 8, 2022
-                                </time>
-                            </p>
-                        </div>
-                        <button
-                            id="dropdownComment1Button"
-                            data-dropdown-toggle="dropdownComment1"
-                            className="inline-flex items-center p-2 text-sm font-medium text-center text-gray-500 dark:text-gray-400 bg-white rounded-lg hover:bg-gray-100 focus:ring-4 focus:outline-none focus:ring-gray-50 dark:bg-gray-900 dark:hover:bg-gray-700 dark:focus:ring-gray-600"
-                            type="button"
-                        >
-                            <svg
-                                className="w-4 h-4"
-                                aria-hidden="true"
-                                xmlns="http://www.w3.org/2000/svg"
-                                fill="currentColor"
-                                viewBox="0 0 16 3"
-                            >
-                                <path d="M2 0a1.5 1.5 0 1 1 0 3 1.5 1.5 0 0 1 0-3Zm6.041 0a1.5 1.5 0 1 1 0 3 1.5 1.5 0 0 1 0-3ZM14 0a1.5 1.5 0 1 1 0 3 1.5 1.5 0 0 1 0-3Z" />
-                            </svg>
-                            <span className="sr-only">Comment settings</span>
-                        </button>
-                        {/* Dropdown menu */}
-                        <div
-                            id="dropdownComment1"
-                            className="hidden z-10 w-36 bg-white rounded divide-y divide-gray-100 shadow dark:bg-gray-700 dark:divide-gray-600"
-                        >
-                            <ul
-                                className="py-1 text-sm text-gray-700 dark:text-gray-200"
-                                aria-labelledby="dropdownMenuIconHorizontalButton"
-                            >
-                                <li>
-                                    <a
-                                        href="#"
-                                        className="block py-2 px-4 hover:bg-gray-100 dark:hover:bg-gray-600 dark:hover:text-white"
-                                    >
-                                        Edit
-                                    </a>
-                                </li>
-                                <li>
-                                    <a
-                                        href="#"
-                                        className="block py-2 px-4 hover:bg-gray-100 dark:hover:bg-gray-600 dark:hover:text-white"
-                                    >
-                                        Remove
-                                    </a>
-                                </li>
-                                <li>
-                                    <a
-                                        href="#"
-                                        className="block py-2 px-4 hover:bg-gray-100 dark:hover:bg-gray-600 dark:hover:text-white"
-                                    >
-                                        Report
-                                    </a>
-                                </li>
-                            </ul>
-                        </div>
-                    </footer>
-                    <p className="text-gray-500 dark:text-gray-400">
-                        Very straight-to-point article. Really worth time reading. Thank you!
-                        But tools are just the instruments for the UX designers. The knowledge
-                        of the design tools are as important as the creation of the design
-                        strategy.
-                    </p>
-                    <div className="flex items-center mt-4 space-x-4">
-                        <button
-                            type="button"
-                            className="flex items-center text-sm text-gray-500 hover:underline dark:text-gray-400 font-medium"
-                        >
-                            <svg
-                                className="mr-1.5 w-3.5 h-3.5"
-                                aria-hidden="true"
-                                xmlns="http://www.w3.org/2000/svg"
-                                fill="none"
-                                viewBox="0 0 20 18"
-                            >
-                                <path
-                                    stroke="currentColor"
-                                    strokeLinecap="round"
-                                    strokeLinejoin="round"
-                                    strokeWidth={2}
-                                    d="M5 5h5M5 8h2m6-3h2m-5 3h6m2-7H2a1 1 0 0 0-1 1v9a1 1 0 0 0 1 1h3v5l5-5h8a1 1 0 0 0 1-1V2a1 1 0 0 0-1-1Z"
-                                />
-                            </svg>
-                            Reply
-                        </button>
-                    </div>
-                </article>
-                <article className="p-6 mb-3 ml-6 lg:ml-12 text-base bg-white rounded-lg dark:bg-gray-900">
-                    <footer className="flex justify-between items-center mb-2">
-                        <div className="flex items-center">
-                            <p className="inline-flex items-center mr-3 text-sm text-gray-900 dark:text-white font-semibold">
-                                <img
-                                    className="mr-2 w-6 h-6 rounded-full"
-                                    src="https://flowbite.com/docs/images/people/profile-picture-5.jpg"
-                                    alt="Jese Leos"
-                                />
-                                Jese Leos
-                            </p>
-                            <p className="text-sm text-gray-600 dark:text-gray-400">
-                                <time dateTime="2022-02-12" title="February 12th, 2022">
-                                    Feb. 12, 2022
-                                </time>
-                            </p>
-                        </div>
-                        <button
-                            id="dropdownComment2Button"
-                            data-dropdown-toggle="dropdownComment2"
-                            className="inline-flex items-center p-2 text-sm font-medium text-center text-gray-500 dark:text-gray-40 bg-white rounded-lg hover:bg-gray-100 focus:ring-4 focus:outline-none focus:ring-gray-50 dark:bg-gray-900 dark:hover:bg-gray-700 dark:focus:ring-gray-600"
-                            type="button"
-                        >
-                            <svg
-                                className="w-4 h-4"
-                                aria-hidden="true"
-                                xmlns="http://www.w3.org/2000/svg"
-                                fill="currentColor"
-                                viewBox="0 0 16 3"
-                            >
-                                <path d="M2 0a1.5 1.5 0 1 1 0 3 1.5 1.5 0 0 1 0-3Zm6.041 0a1.5 1.5 0 1 1 0 3 1.5 1.5 0 0 1 0-3ZM14 0a1.5 1.5 0 1 1 0 3 1.5 1.5 0 0 1 0-3Z" />
-                            </svg>
-                            <span className="sr-only">Comment settings</span>
-                        </button>
-                        {/* Dropdown menu */}
-                        <div
-                            id="dropdownComment2"
-                            className="hidden z-10 w-36 bg-white rounded divide-y divide-gray-100 shadow dark:bg-gray-700 dark:divide-gray-600"
-                        >
-                            <ul
-                                className="py-1 text-sm text-gray-700 dark:text-gray-200"
-                                aria-labelledby="dropdownMenuIconHorizontalButton"
-                            >
-                                <li>
-                                    <a
-                                        href="#"
-                                        className="block py-2 px-4 hover:bg-gray-100 dark:hover:bg-gray-600 dark:hover:text-white"
-                                    >
-                                        Edit
-                                    </a>
-                                </li>
-                                <li>
-                                    <a
-                                        href="#"
-                                        className="block py-2 px-4 hover:bg-gray-100 dark:hover:bg-gray-600 dark:hover:text-white"
-                                    >
-                                        Remove
-                                    </a>
-                                </li>
-                                <li>
-                                    <a
-                                        href="#"
-                                        className="block py-2 px-4 hover:bg-gray-100 dark:hover:bg-gray-600 dark:hover:text-white"
-                                    >
-                                        Report
-                                    </a>
-                                </li>
-                            </ul>
-                        </div>
-                    </footer>
-                    <p className="text-gray-500 dark:text-gray-400">
-                        Much appreciated! Glad you liked it ☺️
-                    </p>
-                    <div className="flex items-center mt-4 space-x-4">
-                        <button
-                            type="button"
-                            className="flex items-center text-sm text-gray-500 hover:underline dark:text-gray-400 font-medium"
-                        >
-                            <svg
-                                className="mr-1.5 w-3.5 h-3.5"
-                                aria-hidden="true"
-                                xmlns="http://www.w3.org/2000/svg"
-                                fill="none"
-                                viewBox="0 0 20 18"
-                            >
-                                <path
-                                    stroke="currentColor"
-                                    strokeLinecap="round"
-                                    strokeLinejoin="round"
-                                    strokeWidth={2}
-                                    d="M5 5h5M5 8h2m6-3h2m-5 3h6m2-7H2a1 1 0 0 0-1 1v9a1 1 0 0 0 1 1h3v5l5-5h8a1 1 0 0 0 1-1V2a1 1 0 0 0-1-1Z"
-                                />
-                            </svg>
-                            Reply
-                        </button>
-                    </div>
-                </article>
-                <article className="p-6 mb-3 text-base bg-white border-t border-gray-200 dark:border-gray-700 dark:bg-gray-900">
-                    <footer className="flex justify-between items-center mb-2">
-                        <div className="flex items-center">
-                            <p className="inline-flex items-center mr-3 text-sm text-gray-900 dark:text-white font-semibold">
-                                <img
-                                    className="mr-2 w-6 h-6 rounded-full"
-                                    src="https://flowbite.com/docs/images/people/profile-picture-3.jpg"
-                                    alt="Bonnie Green"
-                                />
-                                Bonnie Green
-                            </p>
-                            <p className="text-sm text-gray-600 dark:text-gray-400">
-                                <time dateTime="2022-03-12" title="March 12th, 2022">
-                                    Mar. 12, 2022
-                                </time>
-                            </p>
-                        </div>
-                        <button
-                            id="dropdownComment3Button"
-                            data-dropdown-toggle="dropdownComment3"
-                            className="inline-flex items-center p-2 text-sm font-medium text-center text-gray-500 dark:text-gray-40 bg-white rounded-lg hover:bg-gray-100 focus:ring-4 focus:outline-none focus:ring-gray-50 dark:bg-gray-900 dark:hover:bg-gray-700 dark:focus:ring-gray-600"
-                            type="button"
-                        >
-                            <svg
-                                className="w-4 h-4"
-                                aria-hidden="true"
-                                xmlns="http://www.w3.org/2000/svg"
-                                fill="currentColor"
-                                viewBox="0 0 16 3"
-                            >
-                                <path d="M2 0a1.5 1.5 0 1 1 0 3 1.5 1.5 0 0 1 0-3Zm6.041 0a1.5 1.5 0 1 1 0 3 1.5 1.5 0 0 1 0-3ZM14 0a1.5 1.5 0 1 1 0 3 1.5 1.5 0 0 1 0-3Z" />
-                            </svg>
-                            <span className="sr-only">Comment settings</span>
-                        </button>
-                        {/* Dropdown menu */}
-                        <div
-                            id="dropdownComment3"
-                            className="hidden z-10 w-36 bg-white rounded divide-y divide-gray-100 shadow dark:bg-gray-700 dark:divide-gray-600"
-                        >
-                            <ul
-                                className="py-1 text-sm text-gray-700 dark:text-gray-200"
-                                aria-labelledby="dropdownMenuIconHorizontalButton"
-                            >
-                                <li>
-                                    <a
-                                        href="#"
-                                        className="block py-2 px-4 hover:bg-gray-100 dark:hover:bg-gray-600 dark:hover:text-white"
-                                    >
-                                        Edit
-                                    </a>
-                                </li>
-                                <li>
-                                    <a
-                                        href="#"
-                                        className="block py-2 px-4 hover:bg-gray-100 dark:hover:bg-gray-600 dark:hover:text-white"
-                                    >
-                                        Remove
-                                    </a>
-                                </li>
-                                <li>
-                                    <a
-                                        href="#"
-                                        className="block py-2 px-4 hover:bg-gray-100 dark:hover:bg-gray-600 dark:hover:text-white"
-                                    >
-                                        Report
-                                    </a>
-                                </li>
-                            </ul>
-                        </div>
-                    </footer>
-                    <p className="text-gray-500 dark:text-gray-400">
-                        The article covers the essentials, challenges, myths and stages the UX
-                        designer should consider while creating the design strategy.
-                    </p>
-                    <div className="flex items-center mt-4 space-x-4">
-                        <button
-                            type="button"
-                            className="flex items-center text-sm text-gray-500 hover:underline dark:text-gray-400 font-medium"
-                        >
-                            <svg
-                                className="mr-1.5 w-3.5 h-3.5"
-                                aria-hidden="true"
-                                xmlns="http://www.w3.org/2000/svg"
-                                fill="none"
-                                viewBox="0 0 20 18"
-                            >
-                                <path
-                                    stroke="currentColor"
-                                    strokeLinecap="round"
-                                    strokeLinejoin="round"
-                                    strokeWidth={2}
-                                    d="M5 5h5M5 8h2m6-3h2m-5 3h6m2-7H2a1 1 0 0 0-1 1v9a1 1 0 0 0 1 1h3v5l5-5h8a1 1 0 0 0 1-1V2a1 1 0 0 0-1-1Z"
-                                />
-                            </svg>
-                            Reply
-                        </button>
-                    </div>
-                </article>
-                <article className="p-6 text-base bg-white border-t border-gray-200 dark:border-gray-700 dark:bg-gray-900">
-                    <footer className="flex justify-between items-center mb-2">
-                        <div className="flex items-center">
-                            <p className="inline-flex items-center mr-3 text-sm text-gray-900 dark:text-white font-semibold">
-                                <img
-                                    className="mr-2 w-6 h-6 rounded-full"
-                                    src="https://flowbite.com/docs/images/people/profile-picture-4.jpg"
-                                    alt="Helene Engels"
-                                />
-                                Helene Engels
-                            </p>
-                            <p className="text-sm text-gray-600 dark:text-gray-400">
-                                <time dateTime="2022-06-23" title="June 23rd, 2022">
-                                    Jun. 23, 2022
-                                </time>
-                            </p>
-                        </div>
-                        <button
-                            id="dropdownComment4Button"
-                            data-dropdown-toggle="dropdownComment4"
-                            className="inline-flex items-center p-2 text-sm font-medium text-center text-gray-500 dark:text-gray-40 bg-white rounded-lg hover:bg-gray-100 focus:ring-4 focus:outline-none focus:ring-gray-50 dark:bg-gray-900 dark:hover:bg-gray-700 dark:focus:ring-gray-600"
-                            type="button"
-                        >
-                            <svg
-                                className="w-4 h-4"
-                                aria-hidden="true"
-                                xmlns="http://www.w3.org/2000/svg"
-                                fill="currentColor"
-                                viewBox="0 0 16 3"
-                            >
-                                <path d="M2 0a1.5 1.5 0 1 1 0 3 1.5 1.5 0 0 1 0-3Zm6.041 0a1.5 1.5 0 1 1 0 3 1.5 1.5 0 0 1 0-3ZM14 0a1.5 1.5 0 1 1 0 3 1.5 1.5 0 0 1 0-3Z" />
-                            </svg>
-                        </button>
-                        {/* Dropdown menu */}
-                        <div
-                            id="dropdownComment4"
-                            className="hidden z-10 w-36 bg-white rounded divide-y divide-gray-100 shadow dark:bg-gray-700 dark:divide-gray-600"
-                        >
-                            <ul
-                                className="py-1 text-sm text-gray-700 dark:text-gray-200"
-                                aria-labelledby="dropdownMenuIconHorizontalButton"
-                            >
-                                <li>
-                                    <a
-                                        href="#"
-                                        className="block py-2 px-4 hover:bg-gray-100 dark:hover:bg-gray-600 dark:hover:text-white"
-                                    >
-                                        Edit
-                                    </a>
-                                </li>
-                                <li>
-                                    <a
-                                        href="#"
-                                        className="block py-2 px-4 hover:bg-gray-100 dark:hover:bg-gray-600 dark:hover:text-white"
-                                    >
-                                        Remove
-                                    </a>
-                                </li>
-                                <li>
-                                    <a
-                                        href="#"
-                                        className="block py-2 px-4 hover:bg-gray-100 dark:hover:bg-gray-600 dark:hover:text-white"
-                                    >
-                                        Report
-                                    </a>
-                                </li>
-                            </ul>
-                        </div>
-                    </footer>
-                    <p className="text-gray-500 dark:text-gray-400">
-                        Thanks for sharing this. I do came from the Backend development and
-                        explored some of the tools to design my Side Projects.
-                    </p>
-                    <div className="flex items-center mt-4 space-x-4">
-                        <button
-                            type="button"
-                            className="flex items-center text-sm text-gray-500 hover:underline dark:text-gray-400 font-medium"
-                        >
-                            <svg
-                                className="mr-1.5 w-3.5 h-3.5"
-                                aria-hidden="true"
-                                xmlns="http://www.w3.org/2000/svg"
-                                fill="none"
-                                viewBox="0 0 20 18"
-                            >
-                                <path
-                                    stroke="currentColor"
-                                    strokeLinecap="round"
-                                    strokeLinejoin="round"
-                                    strokeWidth={2}
-                                    d="M5 5h5M5 8h2m6-3h2m-5 3h6m2-7H2a1 1 0 0 0-1 1v9a1 1 0 0 0 1 1h3v5l5-5h8a1 1 0 0 0 1-1V2a1 1 0 0 0-1-1Z"
-                                />
-                            </svg>
-                            Reply
-                        </button>
-                    </div>
-                </article>
             </div>
         </section>
     )

@@ -13,7 +13,7 @@ interface ModalCardProps {
     onClose: () => void;
     onRefetch: () => void;
     cardId: any,
-    ownerId: any
+    ownerId: any,
 }
 const mdParser = new MarkdownIt();
 const Modal_update_card: React.FC<ModalCardProps> = ({ onClose, cardId, onRefetch, ownerId }) => {
@@ -219,7 +219,7 @@ const Modal_update_card: React.FC<ModalCardProps> = ({ onClose, cardId, onRefetc
                         <h2 className="p-2 pl-0 pb-0 text-base font-semibold leading-7 text-gray-900">
                             Hoạt động
                         </h2>
-                        <Comment />
+                        <Comment cardId={cardId} onRefetch={onRefetch} formDataCard={formDataCard} />
                     </div>
                 </div>
             </form>

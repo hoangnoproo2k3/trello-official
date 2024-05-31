@@ -1,20 +1,10 @@
 /* eslint-disable @next/next/no-img-element */
-import Group_avatar from '@/app/_components/group_avatar'
+import { updateCardWithLike, updateCardWithUnLike } from '@/apis/cardApi'
 import { useSortable } from '@dnd-kit/sortable'
 import { CSS } from '@dnd-kit/utilities'
-import { Edit, Heart, MessageSquareMore, Paperclip } from 'lucide-react'
-import { useState } from 'react'
-import Modal_update_card from '../modal/Modal-update-card'
-import { updateCardWithLike, updateCardWithUnLike } from '@/apis/cardApi'
+import { Edit, Heart, MessageSquareMore } from 'lucide-react'
 
-const Item_body_card = ({ card, onRefetch, ownerId }: any) => {
-    const [showModal, setShowModal] = useState(false);
-    const openModal = () => {
-        setShowModal(true);
-    };
-    const closeModal = () => {
-        setShowModal(false);
-    };
+const Item_body_card = ({ card, onRefetch, openModal }: any) => {
     const {
         attributes,
         listeners,
@@ -49,7 +39,7 @@ const Item_body_card = ({ card, onRefetch, ownerId }: any) => {
                 <button
                     onClick={(e) => {
                         e.stopPropagation();
-                        openModal()
+                        openModal(card._id)
                     }}
                     className="absolute top-2 right-2 p-1 bg-white rounded-full shadow-md hover:bg-gray-100"
                 >
@@ -74,13 +64,11 @@ const Item_body_card = ({ card, onRefetch, ownerId }: any) => {
                             <span className='text-[14px] mr-1'>{card?.comments?.length}</span><MessageSquareMore height={20} width={20} />
                         </div>
                         <div className='flex opacity-[0.2] mx-[12px]' onClick={hanldeLike}>
-                            <span className='text-[14px] mr-1'>{card.like.length}</span><Heart height={20} width={20} fill={`${card.like.includes(localStorage.getItem('userId')) ? 'red' : ''}`} />
+                            <span className='text-[14px] mr-1'>{card?.like?.length}</span><Heart height={20} width={20} fill={`${card?.like?.includes(localStorage.getItem('userId')) ? 'red' : ''}`} />
                         </div>
                     </div>
                 </div>
             </div>
-            {showModal && (<Modal_update_card onClose={closeModal} cardId={card?._id} onRefetch={onRefetch} ownerId={ownerId} />)}
-
         </>
     )
 }

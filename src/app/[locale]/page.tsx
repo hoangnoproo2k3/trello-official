@@ -29,6 +29,7 @@ const Index = () => {
 
   useEffect(() => {
     fetchLatestDocuments(currentPage);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [currentPage, session?.user]);
 
   const handlePrevPage = () => {
@@ -76,11 +77,11 @@ const Index = () => {
           </div>
         </div>
         <p className='p-10 font-bold'>THEO DÕI HOẠT ĐỘNG CỘNG ĐỒNG</p>
-        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-8 mx-8">
+        <div className="grid md:grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-4 gap-8 mx-8">
           {listBoards.length > 0 && listBoards?.map((item: any) => {
             return (
               <div key={item?._id} className={`flex col-span-1 font-bold  `} >
-                <div className="max-w-sm bg-white border border-gray-200 rounded-lg shadow dark:bg-gray-800 dark:border-gray-700" style={{ backgroundColor: item?.bgColor, minWidth: '460px' }}>
+                <div className="max-w-sm bg-white border border-gray-200 rounded-lg shadow dark:bg-gray-800 dark:border-gray-700" style={{ backgroundColor: item?.bgColor, minWidth: '360px' }}>
                   <div className="p-5">
                     <a href="#">
                       <h5 className="mb-2 text-2xl font-bold tracking-tight text-gray-900 dark:text-white">

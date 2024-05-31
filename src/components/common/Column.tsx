@@ -6,7 +6,7 @@ import { CSS } from '@dnd-kit/utilities';
 import { GripVertical, Trash } from 'lucide-react'; // Add Trash icon
 import { useEffect, useRef, useState } from 'react';
 import Modal_card from './modal/Modal-card';
-import { getCardssWithColumn } from '@/apis/cardApi';
+import Modal_update_card from './modal/Modal-update-card';
 
 const Column = ({ column, onInteraction, ownerId }: any) => {
     const [showModal, setShowModal] = useState(false);
@@ -18,6 +18,15 @@ const Column = ({ column, onInteraction, ownerId }: any) => {
     };
     const closeModal = () => {
         setShowModal(false);
+    };
+    const [showModalUpdate, setShowModalUpdate] = useState(false);
+    const [selectedCardId, setSelectedCardId] = useState(null);
+    const openModalUpdate = (cardId: any) => {
+        setSelectedCardId(cardId);
+        setShowModalUpdate(true);
+    };
+    const closeModalUpdate = () => {
+        setShowModalUpdate(false);
     };
     const toggleDropdown = () => {
         setShowDropdown(!showDropdown);
@@ -95,7 +104,7 @@ const Column = ({ column, onInteraction, ownerId }: any) => {
                     {column?.cards?.length > 0 && (
                         <SortableContext items={column?.cards?.map((c: any) => c._id)} strategy={verticalListSortingStrategy}>
                             {column?.cards?.map((card: any, index: any) => (
-                                <Item_body_card key={index} card={card} onRefetch={onInteraction} ownerId={ownerId} />
+                                <Item_body_card key={index} card={card} onRefetch={onInteraction} ownerId={ownerId} openModal={openModalUpdate} />
                             ))}
                         </SortableContext>
                     )}
@@ -104,6 +113,7 @@ const Column = ({ column, onInteraction, ownerId }: any) => {
                     </div>
                 </div>
             </div>
+            {showModalUpdate && <Modal_update_card onClose={closeModalUpdate} cardId={selectedCardId} onRefetch={onInteraction} ownerId={ownerId} />}
             {showModal && (<Modal_card onClose={closeModal} columnId={column?._id} boardId={column?.boardId} onRefetch={onInteraction} />)}
         </>
     );

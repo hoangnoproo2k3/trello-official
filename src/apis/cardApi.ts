@@ -1,4 +1,4 @@
-'use server'
+'use client'
 import axiosInstance from './axiosInstance';
 export const createNewCard = async (data: any) => {
     try {
@@ -85,6 +85,33 @@ export const updateCardWithLike = async (data: any) => {
 export const updateCardWithUnLike = async (data: any) => {
     try {
         const response = await axiosInstance.patch('/v1/cards/update-unlike', data);
+        if (response.status === 200) {
+            return response.data;
+        } else {
+            throw new Error(`Failed with status: ${response.status}`);
+        }
+    } catch (error) {
+        console.error('Error saving user data to external API:', error);
+        throw error;
+    }
+}
+export const createCommentInCard = async (cardId: any, data: any) => {
+    try {
+        const response = await axiosInstance.post(`/v1/cards/update-comment/${cardId}`, data);
+        if (response.status === 200) {
+            return response.data;
+        } else {
+            throw new Error(`Failed with status: ${response.status}`);
+        }
+    } catch (error) {
+        console.error('Error saving user data to external API:', error);
+        throw error;
+    }
+}
+export const deleteCommentInCard = async (cardId: any, data: any) => {
+
+    try {
+        const response = await axiosInstance.post(`/v1/cards/delete-comment/${cardId}`, data);
         if (response.status === 200) {
             return response.data;
         } else {
