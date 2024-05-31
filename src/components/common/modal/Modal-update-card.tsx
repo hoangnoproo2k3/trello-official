@@ -7,16 +7,22 @@ import MarkdownIt from 'markdown-it';
 import React, { useEffect, useState } from 'react';
 import 'react-markdown-editor-lite/lib/index.css';
 import Modal from './Modal';
+import Comment from '../action/comment';
+import { toast } from 'react-toastify';
 interface ModalCardProps {
     onClose: () => void;
     onRefetch: () => void;
-    cardId: any
+    cardId: any,
+    ownerId: any
 }
 const mdParser = new MarkdownIt();
-const Modal_update_card: React.FC<ModalCardProps> = ({ onClose, cardId, onRefetch }) => {
+const Modal_update_card: React.FC<ModalCardProps> = ({ onClose, cardId, onRefetch, ownerId }) => {
     const [formDataCard, setFormDataCard] = useState<any>();
     const [isEditing, setIsEditing] = useState(false);
     const [isEditingDescription, setIsEditingDescription] = useState(false);
+    const checkOwnerId = () => {
+        return ownerId === localStorage.getItem('userId');
+    };
     // Get data card
     useEffect(() => {
         fetchDataCardWithId(cardId)
@@ -30,48 +36,56 @@ const Modal_update_card: React.FC<ModalCardProps> = ({ onClose, cardId, onRefetc
         }
     }
     const handleImageChange = async (e: any) => {
-        const file = e.target.files[0];
-        if (file) {
-            const validImageTypes = ['image/gif', 'image/jpeg', 'image/png'];
-            const fileType = file.type;
+        if (checkOwnerId()) {
+            const file = e.target.files[0];
+            if (file) {
+                const validImageTypes = ['image/gif', 'image/jpeg', 'image/png'];
+                const fileType = file.type;
 
-            if (!validImageTypes.includes(fileType)) {
-                alert('Please select a valid image file (JPEG, PNG, GIF).');
-                return;
-            }
-            const formDataCard = new FormData();
-            formDataCard?.append('file', file);
-            try {
-                const response = await fetch(`${process.env.API_ROOT}/upload`, {
-                    method: 'POST',
-                    body: formDataCard,
-                });
-
-                if (response.ok) {
-                    const result = await response.json();
-                    setFormDataCard({
-                        ...formDataCard,
-                        image: result?.signedUrl
-                    });
-                    await updateCard(cardId, {
-                        ...formDataCard,
-                        image: result?.signedUrl
-                    })
-                    fetchDataCardWithId(cardId)
-                } else {
-                    console.error('File upload failed', response.statusText);
+                if (!validImageTypes.includes(fileType)) {
+                    alert('Please select a valid image file (JPEG, PNG, GIF).');
+                    return;
                 }
-            } catch (error) {
-                console.error('Error uploading file', error);
+                const formDataCard = new FormData();
+                formDataCard?.append('file', file);
+                try {
+                    const response = await fetch(`${process.env.API_ROOT}/upload`, {
+                        method: 'POST',
+                        body: formDataCard,
+                    });
+
+                    if (response.ok) {
+                        const result = await response.json();
+                        setFormDataCard({
+                            ...formDataCard,
+                            image: result?.signedUrl
+                        });
+                        await updateCard(cardId, {
+                            ...formDataCard,
+                            image: result?.signedUrl
+                        })
+                        fetchDataCardWithId(cardId)
+                    } else {
+                        console.error('File upload failed', response.statusText);
+                    }
+                } catch (error) {
+                    console.error('Error uploading file', error);
+                }
             }
+        } else {
+            toast.error('Tài khoản của bạn không thể cập nhật!')
         }
     };
     const handleDoubleClick = () => {
-        setIsEditing(true);
+        if (checkOwnerId()) {
+            setIsEditing(true);
+        }
     };
     const handleBlur = async () => {
-        setIsEditing(false);
-        await updateCard(cardId, formDataCard)
+        if (checkOwnerId()) {
+            setIsEditing(false);
+            await updateCard(cardId, formDataCard)
+        }
     };
     const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
         setFormDataCard({
@@ -130,7 +144,7 @@ const Modal_update_card: React.FC<ModalCardProps> = ({ onClose, cardId, onRefetc
                                         <p className="text-xs text-gray-500 dark:text-gray-400">SVG, PNG, JPG or GIF (MAX. 800x400px)</p>
                                     </div>
                                 )}
-                                <input id="dropzone-file" type="file" className="hidden" onChange={handleImageChange} accept="image/*" />
+                                <input id="dropzone-file" type="file" disabled={!checkOwnerId()} className="hidden" onChange={handleImageChange} accept="image/*" />
                                 {formDataCard?.image && (
                                     <p
                                         className="flex gap-2 absolute bottom-0 right-0 mb-4 mr-4 px-4 py-2 bg-none text-white rounded bg-[#9f9f9f] hover:bg-[#a2918f] "
@@ -164,6 +178,7 @@ const Modal_update_card: React.FC<ModalCardProps> = ({ onClose, cardId, onRefetc
                         {isEditing ? (
                             <input
                                 type="text"
+                                disabled={!checkOwnerId()}
                                 value={formDataCard?.title}
                                 onChange={handleChange}
                                 onBlur={handleBlur}
@@ -178,7 +193,7 @@ const Modal_update_card: React.FC<ModalCardProps> = ({ onClose, cardId, onRefetc
                         <div className='text-gray-900 text-[14px] m-2'>trong danh sách To do</div>
                         <div className="flex items-center">
                             <h2 className="p-2 pl-0 pb-0 text-base font-semibold leading-7 text-gray-900">Mô tả</h2>
-                            {isEditingDescription ? (
+                            {isEditingDescription && checkOwnerId() ? (
                                 <Save
                                     className="w-4 h-4 ml-2 text-gray-500 cursor-pointer"
                                     onClick={() => setIsEditingDescription(false)}
@@ -190,7 +205,7 @@ const Modal_update_card: React.FC<ModalCardProps> = ({ onClose, cardId, onRefetc
                                 />
                             )}
                         </div>
-                        {isEditingDescription ? (
+                        {isEditingDescription && checkOwnerId() ? (
                             <BlogEditor
                                 value={formDataCard?.description}
                                 onChange={handleChangeDesc}
@@ -201,10 +216,10 @@ const Modal_update_card: React.FC<ModalCardProps> = ({ onClose, cardId, onRefetc
                                 <div dangerouslySetInnerHTML={{ __html: formDataCard?.description }} />
                             </div>
                         )}
-                        {/* <h2 className="p-2 pl-0 pb-0 text-base font-semibold leading-7 text-gray-900">
+                        <h2 className="p-2 pl-0 pb-0 text-base font-semibold leading-7 text-gray-900">
                             Hoạt động
                         </h2>
-                        <Comment /> */}
+                        <Comment />
                     </div>
                 </div>
             </form>

@@ -4,6 +4,8 @@ import '@/styles/globals.css';
 import { ThemeProvider } from "@/themeProvider";
 import { NextIntlClientProvider, useMessages } from 'next-intl';
 import { Poppins } from 'next/font/google';
+import { ToastContainer } from 'react-toastify';
+import 'react-toastify/dist/ReactToastify.css';
 import { Providers } from "./Providers";
 const poppins = Poppins({
   weight: '500',
@@ -25,6 +27,7 @@ export default function RootLayout({
       <body className={poppins.className} >
         <AppWrappers>
           <Providers>
+            <ToastContainer />
             <ThemeProvider
               attribute="class"
               defaultTheme="system"

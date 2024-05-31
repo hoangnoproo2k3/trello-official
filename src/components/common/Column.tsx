@@ -8,7 +8,7 @@ import { useEffect, useRef, useState } from 'react';
 import Modal_card from './modal/Modal-card';
 import { getCardssWithColumn } from '@/apis/cardApi';
 
-const Column = ({ column, onInteraction }: any) => {
+const Column = ({ column, onInteraction, ownerId }: any) => {
     const [showModal, setShowModal] = useState(false);
     const [showDropdown, setShowDropdown] = useState(false);
     const dropdownRef = useRef<HTMLDivElement | null>(null);
@@ -95,7 +95,7 @@ const Column = ({ column, onInteraction }: any) => {
                     {column?.cards?.length > 0 && (
                         <SortableContext items={column?.cards?.map((c: any) => c._id)} strategy={verticalListSortingStrategy}>
                             {column?.cards?.map((card: any, index: any) => (
-                                <Item_body_card key={index} card={card} onRefetch={onInteraction} />
+                                <Item_body_card key={index} card={card} onRefetch={onInteraction} ownerId={ownerId} />
                             ))}
                         </SortableContext>
                     )}

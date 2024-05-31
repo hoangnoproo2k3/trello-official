@@ -6,6 +6,7 @@ import { useSession } from "next-auth/react";
 import { usePathname, useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 import DateDifferenceComponent from "../_components/DateDifferenceComponent";
+import { toast } from "react-toastify";
 const Index = () => {
   const currentPath = usePathname()
   const { data: session } = useSession();
@@ -39,6 +40,17 @@ const Index = () => {
   const handleNextPage = () => {
     setCurrentPage(currentPage + 1);
   };
+  const handleJoinBoard = async (boardId: any) => {
+    if (localStorage.getItem('userId') != undefined) {
+      await joinBoardWithMember({
+        boardId: boardId,
+        ownerId: localStorage.getItem('userId')
+      })
+      router.push(`${currentPath}/boards`)
+    } else {
+      toast.error('Vui lòng đăng nhập');
+    }
+  }
   return (
     <div className="bg-slate-50 dark:bg-background h-screen flex">
       <Nav />
@@ -96,13 +108,7 @@ const Index = () => {
                       {item.createdAt && <DateDifferenceComponent apiDate={item.createdAt} />}
                     </div>
                     <button
-                      onClick={async () => {
-                        await joinBoardWithMember({
-                          boardId: item._id,
-                          ownerId: localStorage.getItem('userId')
-                        })
-                        router.push(`${currentPath}/boards`)
-                      }}
+                      onClick={() => handleJoinBoard(item._id)}
                       // href={`${currentPath}/${item?.slug}?boardIdObj=${item?._id}`}
                       className="inline-flex items-center px-3 py-2 text-sm font-medium text-center text-white bg-blue-700 rounded-lg hover:bg-blue-800 focus:ring-4 focus:outline-none focus:ring-blue-300 dark:bg-blue-600 dark:hover:bg-blue-700 dark:focus:ring-blue-800"
                     >

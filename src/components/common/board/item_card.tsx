@@ -6,7 +6,7 @@ import { Heart, MessageSquareMore, Paperclip } from 'lucide-react'
 import { useState } from 'react'
 import Modal_update_card from '../modal/Modal-update-card'
 
-const Item_body_card = ({ card, onRefetch }: any) => {
+const Item_body_card = ({ card, onRefetch, ownerId }: any) => {
     const [showModal, setShowModal] = useState(false);
 
     const openModal = () => {
@@ -47,11 +47,10 @@ const Item_body_card = ({ card, onRefetch }: any) => {
                 <p className='whitespace-pre-line dark:text-black' >
                     {card?.title}
                 </p>
-                <p className='whitespace-pre-line  dark:text-black text-[13px] font-light opacity-[0.4] leading-[19px] pb-[30px]' >
+                <p className='whitespace-pre-line  dark:text-black text-[13px] font-light opacity-[0.4] leading-[19px] pb-[20px]' >
                     <div dangerouslySetInnerHTML={{ __html: card?.description?.length > 50 ? `${card?.description?.slice(0, 50)}...` : card?.description }} />
                 </p>
                 <div className={'flex justify-between items-center pb-[20px] '}>
-                    <Group_avatar size={30} />
                     <div className='flex  dark:text-black'>
                         <div className='flex opacity-[0.2] '>
                             <span className='text-[14px] mr-1'>{card?.comments?.length}</span><MessageSquareMore height={20} width={20} />
@@ -65,7 +64,7 @@ const Item_body_card = ({ card, onRefetch }: any) => {
                     </div>
                 </div>
             </div>
-            {showModal && (<Modal_update_card onClose={closeModal} cardId={card?._id} onRefetch={onRefetch} />)}
+            {showModal && (<Modal_update_card onClose={closeModal} cardId={card?._id} onRefetch={onRefetch} ownerId={ownerId} />)}
 
         </>
     )

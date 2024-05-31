@@ -33,7 +33,7 @@ const ACTIVE_DRAG_ITEM_TYPE = {
     COLUMN: 'ACTIVE_DRAG_ITEM_TYPE_COLUMN',
     CARD: 'ACTIVE_DRAG_ITEM_TYPE_CARD'
 }
-const ListColumns = ({ boards, boardId }: any) => {
+const ListColumns = ({ boards, boardId, ownerId }: any) => {
     const pointerSensor = useSensor(PointerSensor, {
         activationConstraint: {
             distance: 10,
@@ -323,7 +323,7 @@ const ListColumns = ({ boards, boardId }: any) => {
                 {Array.isArray(boards) &&
                     <SortableContext items={boards?.map((c: any) => c._id)} strategy={horizontalListSortingStrategy}>
                         {orderedColumns?.map((column: any, index: any) => (
-                            <Column key={index} column={column} onInteraction={fetchListBoards} />
+                            <Column key={index} column={column} onInteraction={fetchListBoards} ownerId={ownerId} />
                         ))}
                     </SortableContext>
                 }
