@@ -69,3 +69,29 @@ export const updateCardWithDndKit = async (data: any) => {
         throw error;
     }
 }
+export const updateCardWithLike = async (data: any) => {
+    try {
+        const response = await axiosInstance.patch('/v1/cards/update-like', data);
+        if (response.status === 200) {
+            return response.data;
+        } else {
+            throw new Error(`Failed with status: ${response.status}`);
+        }
+    } catch (error) {
+        console.error('Error saving user data to external API:', error);
+        throw error;
+    }
+}
+export const updateCardWithUnLike = async (data: any) => {
+    try {
+        const response = await axiosInstance.patch('/v1/cards/update-unlike', data);
+        if (response.status === 200) {
+            return response.data;
+        } else {
+            throw new Error(`Failed with status: ${response.status}`);
+        }
+    } catch (error) {
+        console.error('Error saving user data to external API:', error);
+        throw error;
+    }
+}
